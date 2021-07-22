@@ -1,0 +1,248 @@
+/******************* Layout_Main *******************/
+
+body {
+    padding: 0;
+    font-family: 'PT Sans', sans-serif;
+}
+
+.grid-main {
+    display: grid;
+    grid-template-columns: 250px auto;
+    grid-template-rows: 100px auto 30px;
+    grid-template-areas: 'logo header' 'deawer main' 'footer footer';
+}
+
+.logo {
+    grid-area: logo;
+    background-color: rgb(85, 83, 83);
+    border-right: 5px solid #fff;
+}
+
+img {
+    width: 250px;
+    height: auto;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.header {
+    grid-area: header;
+    background-color: darkblue;
+}
+
+.deawer {
+    grid-area: deawer;
+    background-color: rgb(85, 83, 83);
+    border-top: 10px solid #fff;
+    border-right: 5px solid #fff;
+}
+
+.main {
+    grid-area: main;
+    border-top: 10px solid #fff;
+    background-color: #e7e7e7;
+}
+
+.footer {
+    grid-area: footer;
+    background-color: darkblue;
+}
+
+.content {
+    /* border: 1px solid #fff; */
+    box-sizing: border-box;
+    padding: 0px;
+}
+
+/******************* page-header *******************/
+
+.page-header p {
+    text-align: start;
+    font-size: 30px;
+    font-weight: bold;
+    padding: 4px 20px;
+}
+
+.page-header p a {
+    text-decoration: none;
+    color: aliceblue;
+}
+
+.page-header:hover p:hover a:hover {
+    text-decoration: none;
+    color: rgb(186, 247, 73);
+}
+
+/******************* page-footer *******************/
+
+.page-footer {
+    display: grid;
+    grid-template-columns: 6fr 6fr;
+}
+
+.page-footer .dev-name {
+    color: aliceblue;
+    font-size: 14px;
+    padding-left: 20px;
+}
+
+.page-footer .seagate {
+    text-align: end;
+    color: aliceblue;
+    font-size: 14px;
+    margin-right: 20px;
+}
+
+/******************* page-drawers *******************/
+
+.menu {
+    margin: 10px 0px 10px 10px;
+}
+
+.menu .title-icon {
+    display: grid;
+    grid-template-columns: 1fr 7fr;
+    color: aliceblue;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+
+.menu .list-menu {
+    display: grid;
+    grid-template-rows: repeat(8, 1fr);
+    grid-row-gap: 15px;
+    padding: 5px ;
+}
+
+.menu .list-menu a {
+    text-decoration: none;
+    text-align: start;
+    color: aliceblue;
+    font-size: 12px;
+    transition: .3s ease-in-out;
+    padding: 5px 10px;
+    text-transform: uppercase;
+    border-radius: 10px;
+}
+
+.menu .list-menu a:hover {
+    color: black;
+    background-color: cyan;
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+.grid {
+    display: grid;
+    grid-template-columns: 1fr  1fr;
+    color: cornsilk;
+    margin-top: 10px;
+    padding: 5px 10px;
+    grid-gap: 20px;
+}
+.grid .grid-logout {
+    display: inline-table;
+    text-align: center;
+    cursor: pointer;
+    transition: .3s ease-in-out;
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+
+.grid .grid-logout:hover {
+    color: #333;
+    background-color: cyan;
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+.grid a {
+    display: inline-table;
+    text-align: center;
+    color: cornsilk;
+    text-decoration: none;
+    cursor: pointer;
+    transition: .3s ease-in-out;
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+.grid a:hover {
+    color: #333;
+    background-color: cyan;
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+
+.config-main {
+    margin: 10px 0px 10px 10px;
+}
+.config-title {
+    display: grid;
+    grid-template-columns: 1fr 7fr;
+    color: aliceblue;
+    font-size: 14px;
+    font-weight: bold;
+}
+.config-item {
+    display: grid;
+    grid-template-rows: repeat(4, 1fr);
+    grid-row-gap: 15px;
+    padding: 5px ;
+}
+.config-item a {
+    text-decoration: none;
+    text-align: start;
+    color: aliceblue;
+    font-size: 12px;
+    transition: .3s ease-in-out;
+    padding: 5px 10px;
+    text-transform: uppercase;
+    border-radius: 10px;
+}
+
+.config-item a:hover {
+    color: black;
+    background-color: cyan;
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+.calendar {
+    padding: 5px 10px;
+}
+
+/************************************* page-Login *************************************/
+.login-main {
+    margin: 10px 10px 10px 10px;
+    color: aliceblue;
+}
+.login-title {
+    display: grid;
+    grid-template-columns: 1fr 7fr;
+    /* row-gap: 1px; */
+}
+
+.form-input {
+    border: 1px solid #333;
+    padding: 5px 10px;
+}
+
+.loging-content {
+    display: inline-table;
+    text-align: center;
+    color: aliceblue;
+    grid-template-columns: 1fr;
+}
+.submit-login p{
+    display: inline-table;
+    margin-top: 10px;
+    border-radius: 5px;
+    transition: .3s ease-in-out;
+    cursor: pointer;
+    padding: 5px 10px;
+    border: 1px solid aliceblue;
+}
+
+.submit-login p:hover {
+    color: #333;
+    background-color: cyan;
+    padding: 5px 10px;
+}
