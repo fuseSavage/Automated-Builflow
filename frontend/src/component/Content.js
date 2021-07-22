@@ -26,7 +26,6 @@ export default function Content() {
                 </nav>
                 <Switch>
                     <Route exact path='/' component={Home}></Route>
-                    {/* <Route path='/rdh-ro' component={Main}></Route> */}
                     <Route path='/rdh-ro' component={() => <Main name='chaiwat.si' />}></Route>
                 </Switch>
             </div>
