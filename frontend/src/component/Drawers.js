@@ -1,38 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'
+import Axios from 'axios'
 import Calendar from 'react-calendar';
-import { ExitToApp, MenuOpen, Home, Apps } from '@material-ui/icons';
-import { Divider, Tooltip } from '@material-ui/core';
+import { MenuOpen, Apps } from '@material-ui/icons';
+import { Divider } from '@material-ui/core';
 import { Link } from 'react-router-dom'
 
 import Login from './Login'
+import Logout from './Logout';
 
 export default function Drawers(props) {
 
-  // const { name } = props;
+
   const [value, onChange] = useState(new Date());
 
+  const [login, setLogin] = useState('')
 
-  const handlelogout = () => {
-    console.log("logout")
+  useEffect(() => {
+    async function fetchData() {
+      const host = `${window.location.protocol}//${window.location.hostname}:3001`
+      await Axios.get(`${host}/login`).then((response) => {
+        if (response.data.loggedIn === true) {
+          setLogin(response.data.user[0].name)
+        }
+      })
+    }
+    fetchData();
+  }, [])
+
+
+  let menuDrawer;
+
+  if (login === '') {
+    menuDrawer = (
+      <Login />
+    )
+  } else {
+    menuDrawer = (
+      <div>
+        <Menu />
+        <Configurations />
+        <Calendars />
+        <Logout />
+      </div>
+    )
   }
-
-  // let menuDrawer;
-
-  // if (name === '') {
-  //   menuDrawer = (
-  //     <Login />
-  //   )
-  // } else {
-  //   menuDrawer = (
-  //     <div>
-  //       <Menu />
-  //       <Configurations />
-  //       <Calendars />
-  //       <LogoutHome />
-  //     </div>
-  //   )
-  // }
-
 
   // function in Drawers //
   function Menu() {
@@ -44,14 +55,14 @@ export default function Drawers(props) {
             <p>Report</p>
           </div>
           <div className="list-menu">
-            <Link to='/rdh-ro'> RDH RO</Link>
-            <Link to='/rdh-sdet'> RDH SDET</Link>
-            <Link to='/rdh-hga'> RDH HGA</Link>
-            <Link to='/ama-sdet'> AMA SDET</Link>
-            <Link to='/ama-hga'> AMA HGA</Link>
-            <Link to='/ama-lsd'> AMA L-Slider</Link>
-            <Link to='/ama-lsd-sdet'> AMA L-Slider-SDET</Link>
-            <Link to='/ama-lsd-hga'> AMA L-Slider-HGA</Link>
+            <Link to='/search-rdh-ro'> RDH RO</Link>
+            <Link to='/search-rdh-sdet'> RDH SDET</Link>
+            <Link to='/search-rdh-hga'> RDH HGA</Link>
+            <Link to='/search-ama-sdet'> AMA SDET</Link>
+            <Link to='/search-ama-hga'> AMA HGA</Link>
+            <Link to='/search-ama-lsd'> AMA L-Slider</Link>
+            <Link to='/search-ama-lsd-sdet'> AMA L-Slider-SDET</Link>
+            <Link to='/search-ama-lsd-hga'> AMA L-Slider-HGA</Link>
           </div>
         </div>
         {/* menu */}
@@ -72,7 +83,7 @@ export default function Drawers(props) {
           <div className="config-item">
             <Link to='/add-img'> Add Image Flow</Link>
             <Link to='/set-mail'> Alert Mail Setting</Link>
-            <Link to='/set-swfw'> SW/FW Setting</Link>
+            <Link to='/sw-fw'> SW/FW Setting</Link>
             <Link to='/manager'> User Manager</Link>
           </div>
         </div>
@@ -94,49 +105,12 @@ export default function Drawers(props) {
     )
   }
 
-  function LogoutHome() {
-    return (
-      <>
-        <div className="grid">
-          <Tooltip title='logout'>
-            <div className="grid-logout" onClick={handlelogout}>
-              <ExitToApp />
-              <p className="logout-text">Logout</p>
-            </div>
-          </Tooltip>
 
-          <div>
-            <Tooltip title='back to home'>
-              <a href='/'>
-                <div className="grid-home">
-                  <Home className="home-icon" />
-                  <p className="home-text">Home</p>
-                </div>
-              </a>
-            </Tooltip>
-          </div>
 
-        </div>
-        {/* grid */}
-      </>
-    )
-  }
-
-  // function Final() {
-  //   return (
-  //     <div>
-  //       {menuDrawer}
-  //     </div>
-  //   )
-  // }
 
   return (
     <div className="page-deawer">
-      <Login />
-      <Menu />
-      <Configurations />
-      <Calendars />
-      <LogoutHome />
+      {menuDrawer}
     </div>
   )
 }

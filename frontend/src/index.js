@@ -5,6 +5,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import 'react-calendar/dist/Calendar.css';
 import { BrowserRouter } from 'react-router-dom'
+import 'react-quill/dist/quill.snow.css';
 
 ReactDOM.render(
   <React.StrictMode>

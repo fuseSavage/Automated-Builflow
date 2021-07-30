@@ -1,11 +1,43 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { LockOpen } from '@material-ui/icons';
 import { TextField, Tooltip, Divider } from '@material-ui/core'
-import { Link } from 'react-router-dom';
+import { useHistory } from 'react-router'
 
 export default function Login() {
 
+    const history = useHistory()
+    const [gid, setGID] = useState('');
+    const [password, setPassword] = useState('');
+    const [loginstatus, setLoginStatus] = useState('');
 
+    const host = `${window.location.protocol}//${window.location.hostname}:3001`
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (gid.length !== 0 && password.length !== 0) {
+            await fetch(`${host}/login`, {
+                method: 'POST',
+                headers: { 'content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    gid: gid,
+                    password: password,
+                })
+            }).then(async (response) => {
+                const content = await response.json();
+                if (content.message) {
+                    setLoginStatus(content.message)
+                } else {
+                    history.go(0)
+                }
+            }).catch((error) => {
+                throw error;
+            })
+        } else {
+            alert('กรุณากรอก GID และ Password')
+        }
+    }
+    
     return (
         <>
             <div className="login-main">
@@ -25,6 +57,7 @@ export default function Login() {
                                     type="text"
                                     autoComplete="current-password"
                                     variant="filled"
+                                    onChange={(e) => { setGID(e.target.value) }}
                                 />
                             </Tooltip>
                         </div>
@@ -32,31 +65,35 @@ export default function Login() {
                             <p>Password</p>
                             <Tooltip title='password'>
                                 <TextField
-                                    style={{ color: '#eceff1' }}
                                     label="Enter Password"
                                     color="secondary"
                                     type="password"
                                     autoComplete="current-password"
                                     variant="filled"
+                                    onChange={(e) => { setPassword(e.target.value) }}
                                 />
                             </Tooltip>
                         </div>
                         <Tooltip title='submit'>
                             <div className="submit-login">
-                                <Link
-                                    to={{
-                                        pathname: "/rdh-ro",
-                                        state: { name: 'chaiwat' }
-                                    }}
-                                >
-                                    <p type="submit">Submit</p>
-                                </Link>
-
+                                <p type="submit" onClick={handleSubmit}>Submit</p>
                             </div>
                         </Tooltip>
+                        <div className="text-status">
+                            <p>{loginstatus}</p>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            {/* <Link
+    to={{
+        pathname: "/rdh-ro",
+        state: { name: 'chaiwat' }
+    }}
+>
+    <p type="submit" >Submit</p>
+</Link> */}
         </>
     )
 }

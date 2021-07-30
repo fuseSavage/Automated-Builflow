@@ -1,6 +1,6 @@
 import React from 'react'
 import { Tooltip } from '@material-ui/core';
-import '../stylesheet/Style.css'
+
 import logo from '../img/logo-seagate.png'
 import Header from './Header'
 import Footers from './Footers'

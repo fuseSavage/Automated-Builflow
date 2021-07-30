@@ -7,8 +7,8 @@ body {
 
 .grid-main {
     display: grid;
-    grid-template-columns: 250px auto;
-    grid-template-rows: 100px auto 30px;
+    grid-template-columns: minmax(250px, 15%) minmax(auto, 84%);
+    grid-template-rows: 100px minmax(600px, auto) 30px;
     grid-template-areas: 'logo header' 'deawer main' 'footer footer';
 }
 
@@ -72,7 +72,6 @@ img {
     text-decoration: none;
     color: rgb(186, 247, 73);
 }
-
 /******************* page-footer *******************/
 
 .page-footer {
