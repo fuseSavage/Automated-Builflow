@@ -9,7 +9,7 @@ export default function Header() {
         <div className="page-header">
             <p>
                 <Tooltip title='home'>
-                    <Link to='/'>FTD Automated Buildflow</Link>
+                    <Link to='/'>RHT Automated Buildflow</Link>
                 </Tooltip>
             </p>
 

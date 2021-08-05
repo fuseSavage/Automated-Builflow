@@ -15,6 +15,9 @@
     width: 300px;
     height: 20px;
 }
+.i-s-5 {
+    width: 100px;
+}
 
 
 .submit-delete {
@@ -200,4 +203,12 @@
 }
 .dash-border {
     border: 2px solid #333;
+}
+
+.ggi{
+    color: blue;
+}
+.MuiTableHead-root .MuiTableCell-root{
+    background-color: #333;
+    color: aliceblue;
 }

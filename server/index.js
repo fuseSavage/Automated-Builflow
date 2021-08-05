@@ -32,6 +32,7 @@ app.use(session({
     }
 }))
 
+//******************** Connection DataBase START ***********************//
 const db = mysql.createConnection({
     user: "root",
     host: "localhost",
@@ -45,28 +46,10 @@ const dbimg = mysql.createConnection({
     password: "root11549",
     database: "images",
 });
+//******************** Connection DataBase END ***********************//
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, "./uploads/images");
-    },
-    filename: function (req, file, cb) {
-        const ext = file.mimetype.split("/")[1];
-        cb(null, `${Date.now()}-${file.originalname}`);
-    }
-});
-const upload = multer({
-    storage: storage,
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype == "image/png" || file.mimetype == "image/jpg" || file.mimetype == "image/jpeg") {
-            cb(null, true);
-        } else {
-            cb(null, false);
-            return cb(new Error('File type not accepted (.png, .jpg, .jpeg)'));
-        }
-    }
-});
 
+//******************** Login Logout START ***********************//
 app.get('/login', (req, res) => {
 
     if (req.session.user) {
@@ -105,26 +88,10 @@ app.post('/logout', (req, res) => {
         }
     });
 })
+//******************** Login Logout END ***********************//
 
-app.get('/rdh-ro', (req, res) => {
-    const exp_bin = req.query.exp_bin;
-    const rdh_ro_table = "EXP_ID, BUILDGROUP, PRODUCTFAMILY, PARTNUM, BLD_INTENT_TYPE, HGA_SUSPENSION_PN, HGA_PART_NUM, SLC_PRIORITY, PARM_HGA_TAB, HGA_BO, AIRBEARINGDESIGN, SLD_BO, TSR_PN_G_SAAM, CL_TSR_PN_I_ELECTRIC1, THREE_DIGIT_WAFER_CODE"
 
-    db.query(`SELECT ${rdh_ro_table} FROM data_2 WHERE EXP_ID = "${exp_bin}" ORDER BY HGA_BO ASC`,
-        (err, result) => {
-            if (err) {
-                console.log(err)
-            }
-            if (result.length != 0) {
-                res.send(result)
-            } else {
-                res.send({
-                    message: "There is no information on this bill number."
-                })
-            }
-        })
-})
-
+//******************** SW FW Setting START ***********************//
 app.get('/swfw', (req, res) => {
     db.query(`SELECT * FROM sw_fw`,
         (err, result) => {
@@ -157,7 +124,32 @@ app.delete('/delswfw', (req, res) => {
             }
         })
 })
+//******************** SW FW Setting END ***********************//
 
+
+
+//******************** Images START ***********************//
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "./uploads/images");
+    },
+    filename: function (req, file, cb) {
+        const ext = file.mimetype.split("/")[1];
+        cb(null, `${Date.now()}-${file.originalname}`);
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype == "image/png" || file.mimetype == "image/jpg" || file.mimetype == "image/jpeg") {
+            cb(null, true);
+        } else {
+            cb(null, false);
+            return cb(new Error('File type not accepted (.png, .jpg, .jpeg)'));
+        }
+    }
+});
 
 app.get('/check-title', (req, res) => {
     dbimg.query(`SHOW TABLES`, (err, result) => {
@@ -267,6 +259,163 @@ app.post('/changeImage', upload.array('imagesArr'), (req, res) => {
         })
     }
 })
+//******************** Images END ***********************//
+
+
+
+//******************** Search BIN START ***********************//
+app.get('/rdh-ro', (req, res) => {
+    const exp_bin = req.query.exp_bin;
+    const table = "EXP_ID, BUILDGROUP, HGA_QTY, PRODUCTFAMILY, PARTNUM, BLD_INTENT_TYPE, HGA_SUSPENSION_PN, HGA_PART_NUM, SLC_PRIORITY, PARM_HGA_TAB, HGA_BO, AIRBEARINGDESIGN, SLD_BO, TSR_PN_G_SAAM, CL_TSR_PN_I_ELECTRIC1, THREE_DIGIT_WAFER_CODE"
+
+    db.query(`SELECT ${table} FROM data_2 WHERE EXP_ID = "${exp_bin}" ORDER BY HGA_BO ASC`,
+        (err, result) => {
+            if (err) {
+                console.log(err)
+            }
+            if (result.length != 0) {
+                res.send(result)
+            } else {
+                res.send({
+                    message: "There is no information on this bill number."
+                })
+            }
+        })
+})
+
+app.get('/rdh-sdet', (req, res) => {
+    const exp_bin = req.query.exp_bin;
+    const table = "EXP_ID, PARTNUM, SLD_BO, THREE_DIGIT_WAFER_CODE, AIRBEARINGDESIGN, SDET_ACTIVATION_DT, SDET_BN, SDET_BUILDGROUP, SDET_CONTROLGROUP, SDET_ET_TSR, SDET_MIN_QTY, SDET_PART_OF_EXP, SDET_PRIORITY, SDET_QTY, SDET_RETEST_BUILD_NUMBER, SDET_SETS_PARTNUM, SDET_SETS_VERSION, SDET_SITE, SDET_TAB"
+
+    db.query(`SELECT ${table} FROM data_2 WHERE EXP_ID = "${exp_bin}" ORDER BY SDET_TAB ASC`,
+        (err, result) => {
+            if (err) {
+                console.log(err)
+            }
+            if (result.length != 0) {
+                res.send(result)
+            } else {
+                res.send({
+                    message: "There is no information on this bill number."
+                })
+            }
+        })
+})
+
+app.get('/rdh-hga', (req, res) => {
+    const exp_bin = req.query.exp_bin;
+    const table = "EXP_ID, BUILDGROUP,SDET_BN, HGA_QTY, PRODUCTFAMILY, PARTNUM, BLD_INTENT_TYPE, HGA_SUSPENSION_PN, HGA_PART_NUM, SLC_PRIORITY, PARM_HGA_TAB, HGA_BO, AIRBEARINGDESIGN, SLD_BO, TSR_PN_G_SAAM, CL_TSR_PN_I_ELECTRIC1, THREE_DIGIT_WAFER_CODE"
+
+    db.query(`SELECT ${table} FROM data_2 WHERE EXP_ID = "${exp_bin}" ORDER BY PARM_HGA_TAB`,
+        (err, result) => {
+            if (err) {
+                console.log(err)
+            }
+            if (result.length != 0) {
+                res.send(result)
+            } else {
+                res.send({
+                    message: "There is no information on this bill number."
+                })
+            }
+        })
+})
+
+app.get('/ama-sdet', (req, res) => {
+    const exp_bin = req.query.exp_bin;
+    const table = "EXP_ID, SDET_ET_TSR, L_SLD_BO, L_SLD_PART_NUM, PRODUCTFAMILY, PARTNUM, SLD_BO, THREE_DIGIT_WAFER_CODE, AIRBEARINGDESIGN, SDET_ACTIVATION_DT, SDET_BN, SDET_BUILDGROUP, SDET_CONTROLGROUP, SDET_ET_TSR, SDET_MIN_QTY, SDET_PART_OF_EXP, SDET_PRIORITY, SDET_QTY, SDET_RETEST_BUILD_NUMBER, SDET_SETS_PARTNUM, SDET_SETS_VERSION, SDET_SITE, SDET_TAB"
+
+    db.query(`SELECT ${table} FROM data_2 WHERE EXP_ID = "${exp_bin}" ORDER BY SLD_BO ASC`,
+        (err, result) => {
+            if (err) {
+                console.log(err)
+            }
+            if (result.length != 0) {
+                res.send(result)
+            } else {
+                res.send({
+                    message: "There is no information on this bill number."
+                })
+            }
+        })
+})
+
+app.get('/ama-hga', (req, res) => {
+    const exp_bin = req.query.exp_bin;
+    const table = "EXP_ID, HGA_ET_TSR, BLD_INTENT_PLATFORM, L_SLD_PART_NUM, BUILDGROUP,SDET_BN, HGA_QTY, PRODUCTFAMILY, PARTNUM, BLD_INTENT_TYPE, HGA_SUSPENSION_PN, HGA_PART_NUM, SLC_PRIORITY, PARM_HGA_TAB, HGA_BO, AIRBEARINGDESIGN, SLD_BO, TSR_PN_G_SAAM, CL_TSR_PN_I_ELECTRIC1, THREE_DIGIT_WAFER_CODE"
+
+    db.query(`SELECT ${table} FROM data_2 WHERE EXP_ID = "${exp_bin}" ORDER BY HGA_BO`,
+        (err, result) => {
+            if (err) {
+                console.log(err)
+            }
+            if (result.length != 0) {
+                res.send(result)
+            } else {
+                res.send({
+                    message: "There is no information on this bill number."
+                })
+            }
+        })
+})
+
+app.get('/ama-lsd', (req, res) => {
+    const exp_bin = req.query.exp_bin;
+    const table = "EXP_ID, SDET_BN, L_SLD_TEAM, L_SLD_TAB,L_SLD_PART_NUM, SDET_ET_TSR, L_SLD_BO, L_SLD_CMP_DT, L_SLD_BUILD_GROUP, PRODUCTFAMILY, PARTNUM, SLD_BO, THREE_DIGIT_WAFER_CODE, AIRBEARINGDESIGN"
+
+    db.query(`SELECT * FROM data_2 WHERE EXP_ID = "${exp_bin}" ORDER BY SLD_BO ASC`,
+        (err, result) => {
+            if (err) {
+                console.log(err)
+            }
+            if (result.length != 0) {
+                res.send(result)
+            } else {
+                res.send({
+                    message: "There is no information on this bill number."
+                })
+            }
+        })
+})
+
+app.get('/ama-lsd-hga', (req, res) => {
+    const exp_bin = req.query.exp_bin;
+    const table = "EXP_ID, HGA_ET_TSR, BLD_INTENT_PLATFORM, L_SLD_PART_NUM, BUILDGROUP,SDET_BN, HGA_QTY, PRODUCTFAMILY, PARTNUM, BLD_INTENT_TYPE, HGA_SUSPENSION_PN, HGA_PART_NUM, SLC_PRIORITY, PARM_HGA_TAB, HGA_BO, AIRBEARINGDESIGN, SLD_BO, TSR_PN_G_SAAM, CL_TSR_PN_I_ELECTRIC1, THREE_DIGIT_WAFER_CODE"
+
+    db.query(`SELECT * FROM data_2 WHERE EXP_ID = "${exp_bin}" ORDER BY HGA_BO`,
+        (err, result) => {
+            if (err) {
+                console.log(err)
+            }
+            if (result.length != 0) {
+                res.send(result)
+            } else {
+                res.send({
+                    message: "There is no information on this bill number."
+                })
+            }
+        })
+})
+
+app.get('/ama-lsd-sdet', (req, res) => {
+    const exp_bin = req.query.exp_bin;
+    const table = "EXP_ID, SDET_ET_TSR, L_SLD_BO, L_SLD_PART_NUM, PRODUCTFAMILY, PARTNUM, SLD_BO, THREE_DIGIT_WAFER_CODE, AIRBEARINGDESIGN, SDET_ACTIVATION_DT, SDET_BN, SDET_BUILDGROUP, SDET_CONTROLGROUP, SDET_ET_TSR, SDET_MIN_QTY, SDET_PART_OF_EXP, SDET_PRIORITY, SDET_QTY, SDET_RETEST_BUILD_NUMBER, SDET_SETS_PARTNUM, SDET_SETS_VERSION, SDET_SITE, SDET_TAB"
+
+    db.query(`SELECT ${table} FROM data_2 WHERE EXP_ID = "${exp_bin}" ORDER BY SLD_BO ASC`,
+        (err, result) => {
+            if (err) {
+                console.log(err)
+            }
+            if (result.length != 0) {
+                res.send(result)
+            } else {
+                res.send({
+                    message: "There is no information on this bill number."
+                })
+            }
+        })
+})
+//******************** Search BIN END ***********************//
 
 
 app.listen(3001, () => {
