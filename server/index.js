@@ -9,8 +9,12 @@ const bodyParser = require("body-parser");
 const multer = require('multer');
 const path = require('path');
 
+// const oracledb = require("oracledb");
+
 
 const app = express();
+
+
 
 app.use(express.json());
 app.use(cors({
@@ -46,10 +50,51 @@ const dbimg = mysql.createConnection({
     password: "root11549",
     database: "images",
 });
+
+
+// Connect Database Oracle//
+// const HGSA_ODS = `(DESCRIPTION =
+//     (ADDRESS_LIST =
+//     (ADDRESS = (PROTOCOL = TCP)(HOST = ttdss2.tep.thai.seagate.com)(PORT = 1521))
+//     )
+   
+//     (CONNECT_DATA =
+   
+//     (SID = ods)
+   
+//     (SERVICE_NAME = ttdss2.tep.thai.seagate.com)
+   
+//     (SERVER = DEDICATED)
+   
+//     )
+//     )`
+
+// const orldb = oracledb.getConnection({
+//     user: "adisornl",
+//     password: "seagate",
+//     connectString: HGSA_ODS
+// },
+//         function (err, connection) {
+//         if (err) {
+//             console.error('123',err); return;
+//         }
+//         connection.execute("SELECT sysdate from dual",
+//         // connection.execute("SELECT * from ETSA_TH_BIN ",
+//         // connection.execute("SELECT table_name, owner FROM ETSA_TH_BIN ORDER BY owner, table_name ",
+//         // connection.execute("SHOW TABLES",
+//             function (err, result) {
+//                 if (err) {
+//                     console.error(err);
+//                 }
+//                 console.log(result.rows);
+//             });
+//     });
+
 //******************** Connection DataBase END ***********************//
 
 
 //******************** Login Logout START ***********************//
+
 app.get('/login', (req, res) => {
 
     if (req.session.user) {
@@ -186,11 +231,11 @@ app.post('/uploadimg', upload.array('imagesArray'), (req, res) => {
                 dbimg.query(`CREATE TABLE ${title} (id INT AUTO_INCREMENT PRIMARY KEY, images VARCHAR(255))`, (err) => {
                     if (err) {
                         dbimg.query(`INSERT INTO ${title} (images) VALUES ("${reqFiles[i]}")`, () => {
-                            
+
                         })
                     } else {
                         dbimg.query(`INSERT INTO ${title} (images) VALUES ("${reqFiles[i]}")`, () => {
-                        
+
                         })
                     }
                 })
@@ -255,7 +300,7 @@ app.post('/changeImage', upload.array('imagesArr'), (req, res) => {
         reqFiles.push(images[i].filename)
 
         dbimg.query(`INSERT INTO ${title} (images) VALUES ("${reqFiles[i]}")`, () => {
-                        
+
         })
     }
 })
@@ -285,7 +330,7 @@ app.get('/rdh-ro', (req, res) => {
 
 app.get('/rdh-sdet', (req, res) => {
     const exp_bin = req.query.exp_bin;
-    const table = "EXP_ID, PARTNUM, SLD_BO, THREE_DIGIT_WAFER_CODE, AIRBEARINGDESIGN, SDET_ACTIVATION_DT, SDET_BN, SDET_BUILDGROUP, SDET_CONTROLGROUP, SDET_ET_TSR, SDET_MIN_QTY, SDET_PART_OF_EXP, SDET_PRIORITY, SDET_QTY, SDET_RETEST_BUILD_NUMBER, SDET_SETS_PARTNUM, SDET_SETS_VERSION, SDET_SITE, SDET_TAB"
+    const table = "EXP_ID, PARTNUM, SLD_BO,PRODUCTFAMILY, THREE_DIGIT_WAFER_CODE, AIRBEARINGDESIGN, SDET_ACTIVATION_DT, SDET_BN, SDET_BUILDGROUP, SDET_CONTROLGROUP, SDET_ET_TSR, SDET_MIN_QTY, SDET_PART_OF_EXP, SDET_PRIORITY, SDET_QTY, SDET_RETEST_BUILD_NUMBER, SDET_SETS_PARTNUM, SDET_SETS_VERSION, SDET_SITE, SDET_TAB"
 
     db.query(`SELECT ${table} FROM data_2 WHERE EXP_ID = "${exp_bin}" ORDER BY SDET_TAB ASC`,
         (err, result) => {
@@ -304,7 +349,7 @@ app.get('/rdh-sdet', (req, res) => {
 
 app.get('/rdh-hga', (req, res) => {
     const exp_bin = req.query.exp_bin;
-    const table = "EXP_ID, BUILDGROUP,SDET_BN, HGA_QTY, PRODUCTFAMILY, PARTNUM, BLD_INTENT_TYPE, HGA_SUSPENSION_PN, HGA_PART_NUM, SLC_PRIORITY, PARM_HGA_TAB, HGA_BO, AIRBEARINGDESIGN, SLD_BO, TSR_PN_G_SAAM, CL_TSR_PN_I_ELECTRIC1, THREE_DIGIT_WAFER_CODE"
+    const table = "EXP_ID, BUILDGROUP,SDET_BN, HGA_QTY, HGA_ET_TSR, PRODUCTFAMILY, PARTNUM, BLD_INTENT_TYPE, HGA_SUSPENSION_PN, HGA_PART_NUM, SLC_PRIORITY, PARM_HGA_TAB, HGA_BO, AIRBEARINGDESIGN, SLD_BO, TSR_PN_G_SAAM, CL_TSR_PN_I_ELECTRIC1, THREE_DIGIT_WAFER_CODE"
 
     db.query(`SELECT ${table} FROM data_2 WHERE EXP_ID = "${exp_bin}" ORDER BY PARM_HGA_TAB`,
         (err, result) => {
@@ -363,7 +408,7 @@ app.get('/ama-lsd', (req, res) => {
     const exp_bin = req.query.exp_bin;
     const table = "EXP_ID, SDET_BN, L_SLD_TEAM, L_SLD_TAB,L_SLD_PART_NUM, SDET_ET_TSR, L_SLD_BO, L_SLD_CMP_DT, L_SLD_BUILD_GROUP, PRODUCTFAMILY, PARTNUM, SLD_BO, THREE_DIGIT_WAFER_CODE, AIRBEARINGDESIGN"
 
-    db.query(`SELECT * FROM data_2 WHERE EXP_ID = "${exp_bin}" ORDER BY SLD_BO ASC`,
+    db.query(`SELECT ${table} FROM data_2 WHERE EXP_ID = "${exp_bin}" ORDER BY SLD_BO ASC`,
         (err, result) => {
             if (err) {
                 console.log(err)
@@ -380,9 +425,9 @@ app.get('/ama-lsd', (req, res) => {
 
 app.get('/ama-lsd-hga', (req, res) => {
     const exp_bin = req.query.exp_bin;
-    const table = "EXP_ID, HGA_ET_TSR, BLD_INTENT_PLATFORM, L_SLD_PART_NUM, BUILDGROUP,SDET_BN, HGA_QTY, PRODUCTFAMILY, PARTNUM, BLD_INTENT_TYPE, HGA_SUSPENSION_PN, HGA_PART_NUM, SLC_PRIORITY, PARM_HGA_TAB, HGA_BO, AIRBEARINGDESIGN, SLD_BO, TSR_PN_G_SAAM, CL_TSR_PN_I_ELECTRIC1, THREE_DIGIT_WAFER_CODE"
+    const table = "EXP_ID, HGA_ET_TSR, L_SLD_BO, L_SLD_BUILD_GROUP, L_SLD_PART_NUM, L_SLD_TAB, BUILDGROUP,SDET_BN, HGA_QTY, PRODUCTFAMILY, PARTNUM, BLD_INTENT_TYPE, HGA_SUSPENSION_PN, HGA_PART_NUM, SLC_PRIORITY, PARM_HGA_TAB, HGA_BO, AIRBEARINGDESIGN, SLD_BO, TSR_PN_G_SAAM, CL_TSR_PN_I_ELECTRIC1, HGA_ET_TSR, THREE_DIGIT_WAFER_CODE"
 
-    db.query(`SELECT * FROM data_2 WHERE EXP_ID = "${exp_bin}" ORDER BY HGA_BO`,
+    db.query(`SELECT ${table} FROM data_2 WHERE EXP_ID = "${exp_bin}" ORDER BY HGA_BO`,
         (err, result) => {
             if (err) {
                 console.log(err)
@@ -399,7 +444,7 @@ app.get('/ama-lsd-hga', (req, res) => {
 
 app.get('/ama-lsd-sdet', (req, res) => {
     const exp_bin = req.query.exp_bin;
-    const table = "EXP_ID, SDET_ET_TSR, L_SLD_BO, L_SLD_PART_NUM, PRODUCTFAMILY, PARTNUM, SLD_BO, THREE_DIGIT_WAFER_CODE, AIRBEARINGDESIGN, SDET_ACTIVATION_DT, SDET_BN, SDET_BUILDGROUP, SDET_CONTROLGROUP, SDET_ET_TSR, SDET_MIN_QTY, SDET_PART_OF_EXP, SDET_PRIORITY, SDET_QTY, SDET_RETEST_BUILD_NUMBER, SDET_SETS_PARTNUM, SDET_SETS_VERSION, SDET_SITE, SDET_TAB"
+    const table = "EXP_ID, SDET_ET_TSR,L_SLD_TAB, L_SLD_BUILD_GROUP, L_SLD_BO, L_SLD_PART_NUM, PRODUCTFAMILY, PARTNUM, SLD_BO, THREE_DIGIT_WAFER_CODE, AIRBEARINGDESIGN, SDET_ACTIVATION_DT, SDET_BN, SDET_BUILDGROUP, SDET_CONTROLGROUP, SDET_ET_TSR, SDET_MIN_QTY, SDET_PART_OF_EXP, SDET_PRIORITY, SDET_QTY, SDET_RETEST_BUILD_NUMBER, SDET_SETS_PARTNUM, SDET_SETS_VERSION, SDET_SITE, SDET_TAB"
 
     db.query(`SELECT ${table} FROM data_2 WHERE EXP_ID = "${exp_bin}" ORDER BY SLD_BO ASC`,
         (err, result) => {

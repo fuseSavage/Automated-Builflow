@@ -82,9 +82,9 @@ export default function Drawers(props) {
           </div>
           <div className="config-item">
             <Link to='/add-img'> Add Image Flow</Link>
-            <Link to='/set-mail'> Alert Mail Setting</Link>
+            {/* <Link to='/set-mail'> Alert Mail Setting</Link> */}
             <Link to='/sw-fw'> SW/FW Setting</Link>
-            <Link to='/manager'> User Manager</Link>
+            {/* <Link to='/manager'> User Manager</Link> */}
           </div>
         </div>
         <Divider />

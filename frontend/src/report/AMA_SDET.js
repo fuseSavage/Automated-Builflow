@@ -4,6 +4,12 @@ import { useLocation } from 'react-router-dom';
 import Parser from 'html-react-parser';
 import ReactQuill from 'react-quill';
 import Axios from 'axios';
+import ReactExport from 'react-data-export';
+
+
+
+const ExcelFile = ReactExport.ExcelFile;
+const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
 
 function createTableHeader(nameHeader) {
     return { nameHeader }
@@ -22,7 +28,7 @@ const rowHeader = [
     createTableHeader('TMWI'),
     createTableHeader('Build&nbsp;Num&nbsp;'),
     createTableHeader('ET&nbsp;TSR&nbsp;'),
-    createTableHeader('Meadia&nbsp;LOT'),
+    createTableHeader('Media&nbsp;LOT'),
     createTableHeader('Flamework'),
     createTableHeader('WITE&nbsp;Revision'),
 ];
@@ -45,6 +51,10 @@ const rowBinDetail = [
 function product(title, result) {
     return { title, result }
 }
+
+
+
+
 
 export default function AMA_SDET(props) {
 
@@ -76,11 +86,17 @@ export default function AMA_SDET(props) {
         async function fetchData() {
             data.forEach(e => {
                 if (e.SDET_TAB === '0') {
+                    e.SDET_TAB = 'Dn'
+                }
+                if (e.SDET_TAB === '1') {
+                    e.SDET_TAB = 'Up'
+                }
+                if (e.SDET_TAB === 'Dn') {
                     setsliderD(e.PARTNUM)
                     setLsliderD(e.L_SLD_PART_NUM)
                     setPnD(e.SDET_SETS_PARTNUM)
                 }
-                if (e.SDET_TAB === '1') {
+                if (e.SDET_TAB === 'Up') {
                     setsliderU(e.PARTNUM)
                     setLsliderU(e.L_SLD_PART_NUM)
                     setPnU(e.SDET_SETS_PARTNUM)
@@ -103,6 +119,7 @@ export default function AMA_SDET(props) {
     const handleInputQTY = (index, event) => {
         const values = [...inputFieldQTY];
         values[index] = event.target.value;
+        data[index].SDET_QTY = event.target.value;
         setinputFieldQTY(values);
     };
 
@@ -110,6 +127,7 @@ export default function AMA_SDET(props) {
     const handleInputWOF = (index, event) => {
         const values = [...inputFieldWOF];
         values[index] = event.target.value;
+        data[index].WOF = 'S' + data[index].SDET_BUILDGROUP + data[index].SDET_BN.slice(2) + data[index].SDET_TAB[0] + '-' + event.target.value + '.wo';
         setinputFieldWOF(values);
     };
 
@@ -118,6 +136,7 @@ export default function AMA_SDET(props) {
         const values = [...allQTY];
         for (let i = 0; i < data.length; i++) {
             values[i] = event.target.value
+            data[i].SDET_QTY = event.target.value;
             setAllQTY(values);
         }
     }
@@ -130,6 +149,7 @@ export default function AMA_SDET(props) {
         const values = [...allWOF];
         for (let i = 0; i < data.length; i++) {
             values[i] = event.target.value
+            data[i].WOF = 'S' + data[i].SDET_BUILDGROUP + data[i].SDET_BN.slice(2) + data[i].SDET_TAB[0] + '-' + event.target.value + '.wo';
             setAllWOF(values);
         }
     }
@@ -141,6 +161,7 @@ export default function AMA_SDET(props) {
     const handleInputWafer = (index, event) => {
         const values = [...inputFieldWafer];
         values[index] = event.target.value;
+        data[index].THREE_DIGIT_WAFER_CODE = event.target.value;
         setinputFieldWafer(values);
     };
 
@@ -148,6 +169,7 @@ export default function AMA_SDET(props) {
     const handleInputAAB = (index, event) => {
         const values = [...inputFieldAAB];
         values[index] = event.target.value;
+        data[index].AIRBEARINGDESIGN = event.target.value;
         setinputFieldAAB(values);
     };
     //************************ input input QTY && WOF END ************************//
@@ -169,7 +191,6 @@ export default function AMA_SDET(props) {
     const handleSelectImage = (e) => {
         let imageName = e.target.value
         if (imageName.length !== 0) {
-            console.log('image', imageName)
             Axios.get(`http://localhost:3001/getImage`, {
                 params: {
                     title: imageName,
@@ -193,6 +214,7 @@ export default function AMA_SDET(props) {
     const [newTestOn, setNewTestOn] = useState('')
 
     const [newProduct, setNewProduct] = useState([])
+    const [newData, setNewData] = useState([])
 
     function handlePreview() {
         setNewSW(swfw[0])
@@ -211,6 +233,8 @@ export default function AMA_SDET(props) {
         ]
 
         setNewProduct(rowProduct)
+        setNewData(rowCal.newvalue)
+        // console.log('data', rowCal.newvalue)
 
     }
     // ***********************  Handle Preview END ****************************//
@@ -218,7 +242,7 @@ export default function AMA_SDET(props) {
     // ***********************  Calculate After click Preview START ***************************//
 
     const NoQTY = inputFieldQTY.map(Number);
-    function createCalculate(sumQTY, NoBO, NoSurface, newData = []) {
+    function createCalculate(sumQTY, NoBO, NoSurface, newvalue = []) {
         for (let i = 0; i < inputFieldQTY.length; i++) {
             if (NoQTY[i] > 1) {
                 sumQTY = sumQTY + NoQTY[i]
@@ -230,13 +254,99 @@ export default function AMA_SDET(props) {
         }
         for (let i = 0; i < data.length; i++) {
             if (inputFieldQTY[i] !== "" && inputFieldQTY[i] != null && inputFieldQTY[i] !== "0") {
-                newData.push(data[i])
+                newvalue.push(data[i])
+
+                const newD = data[i]
+                newD.SW = swfw[0];
+                newD.FW = swfw[1];
+
+                newD.WO = 'S' + data[i].SDET_BUILDGROUP + data[i].SDET_BN.slice(2) + data[i].SDET_TAB[0]
+                newD.TMWI_ET = 'S' + data[i].SDET_BUILDGROUP + data[i].SDET_BN.slice(2)
+                newD.MEDIA_LOT = testON;
             }
         }
-        return { sumQTY, NoBO, NoSurface, newData };
+        return { sumQTY, NoBO, NoSurface, newvalue };
     }
 
     // ***********************  Calculate After click Preview END ****************************//
+
+    // ***********************  Export ExcelFile  START ****************************//
+
+    const borders = {
+        top: { style: "thin", color: { rgb: '001400' } },
+        bottom: { style: "thin", color: { rgb: '001400' } },
+        left: { style: "thin", color: { rgb: '001400' } },
+        right: { style: "thin", color: { rgb: '001400' } }
+    }
+    const fonttitle = {
+        name: 'Arial',
+        sz: '11',
+        bold: true,
+        color: { rgb: 'ffffff' }
+    }
+    const filltitle = {
+        fgColor: { rgb: '00cc00' }
+    }
+
+    const fontvalue = {
+        name: 'Arial',
+        sz: '11',
+    }
+    const fillvalue = {
+        fgColor: { rgb: 'ebffeb' }
+    }
+
+    const aligncenter = {
+        horizontal: "center"
+    }
+    const multiDataSet = [
+        {
+            columns: [
+                { title: "No", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "Wafer", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "AAB  Design ", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "Group", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "BO SLIDER", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+
+                { title: "L-Slider BO", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "SDET SBR", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "SDET WO file", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "SDET loading Q'ty", width: { wpx: 150 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } }, 
+                { title: "TAB", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+
+                { title: "TMWI", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "Build Num ", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } }, 
+                { title: "ET TSR", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "Media LOT", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "Flamework", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "WITE Revision", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+
+            ],
+            data: newData.map((data, index) => [
+                { value: index + 1, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.THREE_DIGIT_WAFER_CODE, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.AIRBEARINGDESIGN, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: 'Group ?', style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.SLD_BO, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+
+                { value: data.L_SLD_BO, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.SDET_BN, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.WOF, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.SDET_QTY, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.SDET_TAB, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+
+                { value: data.TMWI_ET, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.SDET_BN, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } }, 
+                { value: data.SDET_ET_TSR, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.MEDIA_LOT, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.FW, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.SW, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+
+            ])
+        }
+    ];
+
+    // ***********************  Export ExcelFile  END ****************************//
 
     const host = `${window.location.protocol}//${window.location.hostname}:3001`
     return (
@@ -350,12 +460,9 @@ export default function AMA_SDET(props) {
 
                         <TableBody>
                             {data.map((val, index) => {
-                                let tab;
-                                if (val.SDET_TAB === '0') {
-                                    tab = 'Dn'
-                                } else {
-                                    tab = 'Up'
-                                }
+
+                                let perfix = 'S' + val.SDET_BUILDGROUP
+
                                 return (
                                     <TableRow key={index} hover>
                                         <TableCell align="right">
@@ -376,11 +483,11 @@ export default function AMA_SDET(props) {
 
                                             }} />
                                         </TableCell>
-                                        <TableCell align="right">Group ?</TableCell>
+                                        <TableCell align="right">group?</TableCell>
                                         <TableCell align="right">{val.SLD_BO}</TableCell>
                                         <TableCell align="right">{val.L_SLD_BO}</TableCell>
                                         <TableCell align="right">{val.SDET_BN}</TableCell>
-                                        <TableCell align="center">{val.SDET_BUILDGROUP}{val.SDET_BN.slice(2)}{tab[0]}-
+                                        <TableCell align="center">{perfix}{val.SDET_BN.slice(2)}{val.SDET_TAB[0]}-
                                             <input className="input-size" type="number" value={inputFieldWOF[index]} onChange={event => {
                                                 handleInputWOF(
                                                     index,
@@ -398,8 +505,8 @@ export default function AMA_SDET(props) {
                                                 );
                                             }} />
                                         </TableCell>
-                                        <TableCell align="right">{tab}</TableCell>
-                                        <TableCell align="right">{val.SDET_BUILDGROUP}{val.SDET_BN.slice(2)}</TableCell>
+                                        <TableCell align="right">{val.SDET_TAB}</TableCell>
+                                        <TableCell align="right">{perfix}{val.SDET_BN.slice(2)}</TableCell>
                                         <TableCell align="right">{val.SDET_BN}</TableCell>
                                         <TableCell align="right">{val.SDET_ET_TSR}</TableCell>
                                         <TableCell align="right">{newTestOn}</TableCell>
@@ -416,7 +523,7 @@ export default function AMA_SDET(props) {
                 <Grid component={Paper} className="w-400">
                     <div className="qty-content">
                         <div className="grid-qty-content">
-                            <p>Set QTY : </p>
+                            <p>SDET QTY : </p>
                             <p>
                                 <input className="input-size" type="number" onChange={event => {
                                     handleInputAllQTY(event)
@@ -425,7 +532,7 @@ export default function AMA_SDET(props) {
                             <p className="submit-smail" onClick={handleSubmitQTY}>submit</p>
                         </div>
                         <div className="grid-qty-content">
-                            <p>Set Work Order File : </p>
+                            <p>Rev .WO : </p>
                             <p>
                                 <input className="input-size" type="number" onChange={event => {
                                     handleInputAllWOF(event)
@@ -439,7 +546,7 @@ export default function AMA_SDET(props) {
                 <div className="content-preview">
                     <Grid component={Paper}>
                         <div className="grid-content">
-                            <p>Set surface :
+                            <p>surface :
                                 <input type="number" value={persurface} onChange={(event) => {
                                     setPersurface(event.target.value);
                                 }} />
@@ -455,7 +562,7 @@ export default function AMA_SDET(props) {
                                 </select>
                             </p>
 
-                            <p>Set Media Lot : 
+                            <p>Media Lot :
                                 <input type="text" value={testON} onChange={(event) => {
                                     setTestON(event.target.value);
                                 }} />
@@ -493,6 +600,14 @@ export default function AMA_SDET(props) {
                                 </TableBody>
                             </Table>
                         </TableContainer>
+                    </div>
+
+                    {/* export Excel */}
+
+                    <div className="export m-t-3">
+                        <ExcelFile filename="Automated Buildflow" element={<p className="submit-preview"  >Export Excel</p>}>
+                            <ExcelSheet dataSet={multiDataSet} name="AMA SDET" />
+                        </ExcelFile>
                     </div>
 
                     <div>

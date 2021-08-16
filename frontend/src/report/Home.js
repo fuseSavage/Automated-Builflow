@@ -24,7 +24,7 @@ function Home() {
     return (
         <div className="main-content rdh-ro">
             <p>
-                {login ? 'Hi ' + login  : 'You are not login'}
+                {login ? 'Hi ' + login  : 'Please login'}
             </p>
         </div>
     )

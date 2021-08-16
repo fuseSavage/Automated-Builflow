@@ -4,6 +4,13 @@ import { useLocation } from 'react-router-dom';
 import Parser from 'html-react-parser';
 import ReactQuill from 'react-quill';
 import Axios from 'axios';
+import ReactExport from 'react-data-export';
+
+
+
+const ExcelFile = ReactExport.ExcelFile;
+const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
+
 
 function createTableHeader(nameHeader) {
     return { nameHeader }
@@ -44,6 +51,10 @@ function product(title, result) {
     return { title, result }
 }
 
+
+
+
+
 export default function RDH_HGA(props) {
 
     const data = useLocation().state.data;
@@ -75,7 +86,7 @@ export default function RDH_HGA(props) {
                 setinputFieldQTY(arr => [...arr, e.HGA_QTY])
                 setinputFieldBO(arr => [...arr, e.SDET_BN])
             });
-            
+
         }
         fetchData();
     }, [data])
@@ -88,6 +99,7 @@ export default function RDH_HGA(props) {
     const handleInputQTY = (index, event) => {
         const values = [...inputFieldQTY];
         values[index] = event.target.value;
+        data[index].HGA_QTY = event.target.value;
         setinputFieldQTY(values);
     };
     const handleSubmitQTY = () => {
@@ -98,6 +110,7 @@ export default function RDH_HGA(props) {
         const values = [...allQTY];
         for (let i = 0; i < data.length; i++) {
             values[i] = event.target.value
+            data[i].HGA_QTY = event.target.value;
             setAllQTY(values);
         }
     }
@@ -106,6 +119,8 @@ export default function RDH_HGA(props) {
     const handleInputWOF = (index, event) => {
         const values = [...inputFieldWOF];
         values[index] = event.target.value;
+        const wof = data[index]
+        wof.WOF  = data[index].BUILDGROUP + data[index].HGA_BO.slice(2) + data[index].PARM_HGA_TAB[0] + '-' + event.target.value + '.wo';
         setinputFieldWOF(values);
     };
     const [allWOF, setAllWOF] = useState([])
@@ -113,6 +128,8 @@ export default function RDH_HGA(props) {
         const values = [...allWOF];
         for (let i = 0; i < data.length; i++) {
             values[i] = event.target.value
+            const wof = data[i]
+            wof.WOF = data[i].BUILDGROUP + data[i].HGA_BO.slice(2) + data[i].PARM_HGA_TAB[0] + '-' + event.target.value + '.wo';
             setAllWOF(values);
         }
     }
@@ -124,6 +141,8 @@ export default function RDH_HGA(props) {
     const handleInputSort = (index, event) => {
         const values = [...inputFieldSort];
         values[index] = event.target.value;
+        const Ndata = data[index]
+        Ndata.SORT = event.target.value;
         setinputFieldSort(values);
     };
     const [allSort, setAllSort] = useState([])
@@ -131,6 +150,8 @@ export default function RDH_HGA(props) {
         const values = [...allSort];
         for (let i = 0; i < data.length; i++) {
             values[i] = event.target.value
+            const Ndata = data[i]
+            Ndata.SORT = event.target.value;
             setAllSort(values);
         }
     }
@@ -142,6 +163,8 @@ export default function RDH_HGA(props) {
     const handleInputBO = (index, event) => {
         const values = [...inputFieldBO];
         values[index] = event.target.value;
+        const Ndata = data[index]
+        Ndata.SDET_BN = event.target.value;
         setinputFieldBO(values);
     };
     const [allBO, setAllBO] = useState([])
@@ -149,6 +172,8 @@ export default function RDH_HGA(props) {
         const values = [...allBO];
         for (let i = 0; i < data.length; i++) {
             values[i] = event.target.value
+            const Ndata = data[i]
+            Ndata.SDET_BN = event.target.value;
             setAllBO(values);
         }
     }
@@ -194,6 +219,7 @@ export default function RDH_HGA(props) {
     const [newFW, setNewFW] = useState('')
 
     const [newProduct, setNewProduct] = useState([])
+    const [newData, setNewData] = useState([])
 
     function handlePreview() {
         setNewSW(swfw[0])
@@ -210,14 +236,15 @@ export default function RDH_HGA(props) {
         ]
 
         setNewProduct(rowProduct)
-
+        setNewData(rowCal.newvalue)
+        // console.log(rowCal.newvalue)
     }
     // ***********************  Handle Preview END ****************************//
 
     // ***********************  Calculate After click Preview START ***************************//
 
     const NoQTY = inputFieldQTY.map(Number);
-    function createCalculate(sumQTY, NoBO, NoSurface, newData = []) {
+    function createCalculate(sumQTY, NoBO, NoSurface, newvalue = []) {
         for (let i = 0; i < inputFieldQTY.length; i++) {
             if (NoQTY[i] > 1) {
                 sumQTY = sumQTY + NoQTY[i]
@@ -229,13 +256,103 @@ export default function RDH_HGA(props) {
         }
         for (let i = 0; i < data.length; i++) {
             if (inputFieldQTY[i] !== "" && inputFieldQTY[i] != null && inputFieldQTY[i] !== "0") {
-                newData.push(data[i])
+                newvalue.push(data[i])
+
+                const newD = data[i]
+                newD.SW = swfw[0];
+                newD.FW = swfw[1];
+
+                newD.WO = data[i].BUILDGROUP + data[i].HGA_BO.slice(2) + data[i].PARM_HGA_TAB[0]
+                newD.TMWI_ET = data[i].BUILDGROUP + data[i].HGA_BO.slice(2)
             }
         }
-        return { sumQTY, NoBO, NoSurface, newData };
+        return { sumQTY, NoBO, NoSurface, newvalue };
     }
 
     // ***********************  Calculate After click Preview END ****************************//
+
+
+    // ***********************  Export ExcelFile  START ****************************//
+
+    const borders = {
+        top: { style: "thin", color: { rgb: '001400' } },
+        bottom: { style: "thin", color: { rgb: '001400' } },
+        left: { style: "thin", color: { rgb: '001400' } },
+        right: { style: "thin", color: { rgb: '001400' } }
+    }
+    const fonttitle = {
+        name: 'Arial',
+        sz: '11',
+        bold: true,
+        color: { rgb: 'ffffff' }
+    }
+    const filltitle = {
+        fgColor: { rgb: '00cc00' }
+    }
+
+    const fontvalue = {
+        name: 'Arial',
+        sz: '11',
+    }
+    const fillvalue = {
+        fgColor: { rgb: 'ebffeb' }
+    }
+
+    const aligncenter = {
+        horizontal: "center"
+    }
+    const multiDataSet = [
+        {
+            columns: [
+                { title: "No", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "BIN", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "PERPIX", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "PRIORITY", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "TAB", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "HGA BO", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "AAB Design", width: { wpx: 100 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "Sort", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "HGA loading Q'ty", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "SDET BO", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "SEQ#/Old BO", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "WAF CODE", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "W/O", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "Work Order File", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "SAAM TSR", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "ET TSR", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "TMWI ET", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "Build Num ET", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "ET S/W", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "ET F/W", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+
+            ],
+            data: newData.map((data, index) => [
+                { value: index + 1, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.EXP_ID, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.BUILDGROUP, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.SLC_PRIORITY, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.PARM_HGA_TAB, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.HGA_BO, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.AIRBEARINGDESIGN, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.SORT, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.HGA_QTY, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.SDET_BN, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.SLD_BO, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.THREE_DIGIT_WAFER_CODE, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.WO, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.WOF, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.TSR_PN_G_SAAM, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.HGA_ET_TSR, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.TMWI_ET, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.HGA_BO, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.SW, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.FW, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+
+            ])
+        }
+    ];
+
+    // ***********************  Export ExcelFile  END ****************************//
 
     const host = `${window.location.protocol}//${window.location.hostname}:3001`
     return (
@@ -302,7 +419,7 @@ export default function RDH_HGA(props) {
                             <TableRow className="table-h">
                                 {rowHeader.map((row, index) => (
                                     <TableCell key={index} align="right" className="table-h-text">
-                                       {Parser(row.nameHeader)}
+                                        {Parser(row.nameHeader)}
                                     </TableCell>
                                 ))}
                             </TableRow>
@@ -354,7 +471,7 @@ export default function RDH_HGA(props) {
                                         .wo
                                     </TableCell>
                                     <TableCell align="right">{val.TSR_PN_G_SAAM}</TableCell>
-                                    <TableCell align="right">{val.CL_TSR_PN_I_ELECTRIC1}</TableCell>
+                                    <TableCell align="right">{val.HGA_ET_TSR}</TableCell>
                                     <TableCell align="right">{val.BUILDGROUP}{val.HGA_BO.slice(2)}</TableCell>
                                     <TableCell align="right">{val.HGA_BO}</TableCell>
                                     <TableCell align="right">{newSW}</TableCell>
@@ -455,6 +572,13 @@ export default function RDH_HGA(props) {
                         </TableContainer>
                     </div>
 
+                    {/* export Excel */}
+
+                    <div className="export m-t-3">
+                        <ExcelFile filename="Automated Buildflow" element={<p className="submit-preview"  >Export Excel</p>}>
+                            <ExcelSheet dataSet={multiDataSet} name="RDH HGA" />
+                        </ExcelFile>
+                    </div>
 
                     <div>
                         <p>Image Flow :
@@ -469,9 +593,9 @@ export default function RDH_HGA(props) {
                         </p>
                         <div className="m-t-3 grid-images">
                             {dataImage.map((val, index) => (
-                                    <a key={index} href={`${host}/showImages/${(encodeURIComponent(val.images.trim()))}`}>
-                                        <img src={`${host}/showImages/${(encodeURIComponent(val.images.trim()))}`} alt="not images" width="350" height="auto" />
-                                    </a>
+                                <a key={index} href={`${host}/showImages/${(encodeURIComponent(val.images.trim()))}`}>
+                                    <img src={`${host}/showImages/${(encodeURIComponent(val.images.trim()))}`} alt="not images" width="350" height="auto" />
+                                </a>
                             ))}
                         </div>
 

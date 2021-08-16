@@ -19,6 +19,10 @@
     width: 100px;
 }
 
+.w-400 {
+    width: 400px;
+}
+
 
 .submit-delete {
     border: 1px solid rgb(160, 153, 221);
@@ -76,7 +80,7 @@
 .submit-preview {
     padding: 2px 2px;
     border: 1px solid #333;
-    width: 80px;
+    width: 120px;
     text-align: center;
     border-radius: 3px;
     background-color: rgb(154, 200, 240);
@@ -180,20 +184,28 @@
     border: 1px solid #333;
     border-radius: 3px;
 }
-.w-400 {
-    width: 400px;
-}
+
 .grid-qty-content {
     display: grid;
     grid-template-columns: 1fr .5fr 1fr;
     text-align: center;
 }
+.grid-qty-content-column {
+    display: grid;
+    grid-template-columns: 2fr .5fr 1fr;
+    text-align: center;
+}
 
 .grid-images {
-    width: 1000px;
+    width: 500px;
     display: grid;
     grid-template-columns:repeat(3, 1fr);
     grid-gap: 30px;
+}
+
+.grid-images img {
+    border: 1px solid #333;
+    width: 300px;
 }
 
 .grid-s-image {

@@ -4,6 +4,13 @@ import { useLocation } from 'react-router-dom';
 import Parser from 'html-react-parser';
 import ReactQuill from 'react-quill';
 import Axios from 'axios';
+import ReactExport from 'react-data-export';
+
+
+const ExcelFile = ReactExport.ExcelFile;
+const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
+
+
 
 function createTableHeader(nameHeader) {
     return { nameHeader }
@@ -29,7 +36,7 @@ const rowHeader = [
     createTableHeader('Tester# '),
     createTableHeader('ET&nbsp;S/W'),
     createTableHeader('ET&nbsp;F/W'),
-    createTableHeader('THREE&nbsp;DIGIT&nbsp;WAF&nbsp;CODE'),
+    createTableHeader('WAF&nbsp;CODE'),
     createTableHeader('WAFER&nbsp;INFO'),
 ];
 
@@ -41,21 +48,26 @@ function product(title, result) {
     return { title, result }
 }
 
-function TableHGAshipment(title) {
-    return { title }
-}
+
+
+
+
+
+
+
+
 
 export default function RDH_RO(props) {
 
     const data = useLocation().state.data;
     const { swfwList, imageName } = props
     const [textEditer, setTextEditer] = useState('');
-
+    const [expID, setExpID] = useState(data[0].EXP_ID)
 
     //************************ set partNum  START ************************//
     useEffect(() => {
         async function fetchData() {
-            data.forEach(e => {
+            data.forEach((e, index) => {
                 setinputFieldQTY(arr => [...arr, e.HGA_QTY])
             });
         }
@@ -72,31 +84,24 @@ export default function RDH_RO(props) {
         binDetail('BLD_INTENT_TYPE', data[0].BLD_INTENT_TYPE)
     ]
 
-    const rowHGAshipment = [
-        TableHGAshipment('BO'),
-        TableHGAshipment('S1'),
-        TableHGAshipment('S2'),
-        TableHGAshipment('S3'),
-        TableHGAshipment('S4'),
-        TableHGAshipment('S5'),
-        TableHGAshipment('S6'),
-        TableHGAshipment('S7'),
-        TableHGAshipment('S8'),
-    ]
-
 
     //************************ input input QTY && WOF START ************************//
+
+
     const [inputFieldQTY, setinputFieldQTY] = useState([])
     const handleInputQTY = (index, event) => {
         const values = [...inputFieldQTY];
         values[index] = event.target.value;
+        data[index].HGA_QTY = event.target.value;
         setinputFieldQTY(values);
     };
 
     const [inputFieldWOF, setinputFieldWOF] = useState([])
     const handleInputWOF = (index, event) => {
         const values = [...inputFieldWOF];
+        const wof = data[index]
         values[index] = event.target.value;
+        wof.WOF = wof.WOF = data[index].BUILDGROUP + data[index].HGA_BO.slice(2) + data[index].PARM_HGA_TAB[0] + '-' + event.target.value + '.wo';
         setinputFieldWOF(values);
     };
 
@@ -105,6 +110,7 @@ export default function RDH_RO(props) {
         const values = [...allQTY];
         for (let i = 0; i < data.length; i++) {
             values[i] = event.target.value
+            data[i].HGA_QTY = event.target.value;
             setAllQTY(values);
         }
     }
@@ -116,7 +122,10 @@ export default function RDH_RO(props) {
     const handleInputAllWOF = (event) => {
         const values = [...allWOF];
         for (let i = 0; i < data.length; i++) {
+            const wof = data[i]
             values[i] = event.target.value
+            // data[i].BUILDGROUP + data[i].HGA_BO.slice(2) + data[i].PARM_HGA_TAB[0]
+            wof.WOF = data[i].BUILDGROUP + data[i].HGA_BO.slice(2) + data[i].PARM_HGA_TAB[0] + '-' + event.target.value + '.wo';
             setAllWOF(values);
         }
     }
@@ -142,6 +151,7 @@ export default function RDH_RO(props) {
         setNewSWFW(e.target.value)
     }
 
+
     const [testON, setTestON] = useState('')
 
     const [media, setMedia] = useState()
@@ -150,7 +160,6 @@ export default function RDH_RO(props) {
     const handleSelectImage = (e) => {
         let imageName = e.target.value
         if (imageName.length !== 0) {
-            console.log('image', imageName)
             Axios.get(`http://localhost:3001/getImage`, {
                 params: {
                     title: imageName,
@@ -178,7 +187,8 @@ export default function RDH_RO(props) {
 
     const [newProduct, setNewProduct] = useState([])
     const [newData, setNewData] = useState([])
-
+    // console.log('new', newData)
+   
     function handlePreview() {
         setNewTestOn(testON)
         setNewMedia(media)
@@ -197,18 +207,21 @@ export default function RDH_RO(props) {
         ]
 
         setNewProduct(rowProduct)
-        setNewData(rowCal.newData)
+        setNewData(rowCal.newvalue)
+
+
+
     }
     // ***********************  Handle Preview END ****************************//
 
 
-    
+
     // ***********************  Calculate After click Preview START ***************************//
 
     const NoQTY = inputFieldQTY.map(Number);
-    function createCalculate(sumQTY, NoBO, NoSurface, newData = []) {
+    function createCalculate(sumQTY, NoBO, NoSurface, newvalue = [],) {
         for (let i = 0; i < inputFieldQTY.length; i++) {
-            if (NoQTY[i] > 1) {
+            if (NoQTY[i] > 0) {
                 sumQTY = sumQTY + NoQTY[i]
                 NoBO = NoBO + 1
             }
@@ -218,19 +231,134 @@ export default function RDH_RO(props) {
         }
         for (let i = 0; i < data.length; i++) {
             if (inputFieldQTY[i] !== "" && inputFieldQTY[i] != null && inputFieldQTY[i] !== "0") {
-                newData.push(data[i])
+                const newD = data[i]
+                newvalue.push(data[i])
+                // {val.BUILDGROUP}{val.HGA_BO.slice(2)}{val.PARM_HGA_TAB[0]}-
+                newD.MEDIA = media;
+                newD.SW = swfw[0];
+                newD.FW = swfw[1];
+                newD.TESTON = testON;
+
+                newD.WO = data[i].BUILDGROUP + data[i].HGA_BO.slice(2) + data[i].PARM_HGA_TAB[0]
+                newD.TMWI_ET = data[i].BUILDGROUP + data[i].HGA_BO.slice(2)
             }
+
         }
-        return { sumQTY, NoBO, NoSurface, newData };
+        return { sumQTY, NoBO, NoSurface, newvalue };
     }
+
+
 
     // ***********************  Calculate After click Preview END ****************************//
 
+    // ***********************  Export ExcelFile  START ****************************//
+
+    const borders = {
+        top: { style: "thin", color: { rgb: '001400' } },
+        bottom: { style: "thin", color: { rgb: '001400' } },
+        left: { style: "thin", color: { rgb: '001400' } },
+        right: { style: "thin", color: { rgb: '001400' } }
+    }
+    const fonttitle = {
+        name: 'Arial',
+        sz: '11',
+        bold: true,
+        color: { rgb: 'ffffff' }
+    }
+    const filltitle = {
+        fgColor: { rgb: '00cc00' }
+    }
+
+    const fontvalue = {
+        name: 'Arial',
+        sz: '11',
+    }
+    const fillvalue = {
+        fgColor: { rgb: 'ebffeb' }
+    }
+
+    const aligncenter = {
+        horizontal: "center"
+    }
+    const multiDataSet = [
+        {
+            columns: [
+                { title: "No", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "BIN", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "PERPIX", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "PRIORITY", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "TAB", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "SBR", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "AAB Design", width: { wpx: 100 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "QTY", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "SEQ#/Old BO", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "W/O", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "Work Order File", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "TMWI ET", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "Build Num ET", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "SAAM TSR", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "Cl tsr pn i electric", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "Media", width: { wpx: 100 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "Tester#", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "ET S/W", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "ET F/W", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "WAF CODE", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "WAFER INFO", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+            ],
+            data: newData.map((data, index) => [
+                { value: index + 1, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.EXP_ID, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.BUILDGROUP, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.SLC_PRIORITY, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.PARM_HGA_TAB, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.HGA_BO, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.AIRBEARINGDESIGN, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.HGA_QTY, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.SLD_BO, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.WO, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.WOF, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.TMWI_ET, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.HGA_BO, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.TSR_PN_G_SAAM, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.CL_TSR_PN_I_ELECTRIC1, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.MEDIA, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.TESTON, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.SW, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.FW, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.THREE_DIGIT_WAFER_CODE, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: '-', style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+            ])
+        }
+    ];
+
+    // ***********************  Export ExcelFile  END ****************************//
+
+
+
     const host = `${window.location.protocol}//${window.location.hostname}:3001`
+
+
     return (
         <div className="main-content">
             <p>Flow RDH-RO</p>
             <TableContainer className="detail-card" component={Paper} style={{ width: '280px' }}>
+                <Table size="small" aria-label="customized table">
+                    <TableBody>
+                        <TableRow hover >
+                            <TableCell align="right" className="detail-card" style={{ color: 'aliceblue' }}>
+                                BIN
+                            </TableCell>
+                            <TableCell >
+                                <input type="text" value={expID} onChange={(e) => {
+                                    setExpID(e.target.value)
+                                }}></input>
+                            </TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            </TableContainer>
+
+            <TableContainer className="detail-card m-t-3" component={Paper} style={{ width: '280px' }}>
                 <Table size="small" aria-label="customized table">
                     <TableBody>
                         {rowBinDetail.map((val, index) => (
@@ -257,18 +385,19 @@ export default function RDH_RO(props) {
                         placeholder="..... Write something ....." />
                 </Grid>
 
-                <TableContainer className="main-table" component={Paper} >
+                <TableContainer className="main-table" component={Paper}  >
                     <Table size="small" aria-label="customized table">
 
                         <TableHead>
                             <TableRow className="table-h">
                                 {rowHeader.map((row, index) => (
                                     <TableCell key={index} align="right" className="table-h-text">
-                                        <p>{Parser(row.nameHeader)}</p>
+                                        {Parser(row.nameHeader)}
                                     </TableCell>
                                 ))}
                             </TableRow>
                         </TableHead>
+
 
                         <TableBody>
                             {data.map((val, index) => (
@@ -281,7 +410,7 @@ export default function RDH_RO(props) {
                                     <TableCell align="right">{val.HGA_BO}</TableCell>
                                     <TableCell align="right">{val.AIRBEARINGDESIGN}</TableCell>
                                     <TableCell align="right">
-                                        <input className="input-size" type="number" value={inputFieldQTY[index]} onChange={event => {
+                                        <input className="input-size" type="text" value={inputFieldQTY[index]} onChange={event => {
                                             handleInputQTY(
                                                 index,
                                                 event
@@ -292,7 +421,7 @@ export default function RDH_RO(props) {
                                     <TableCell align="right">{val.SLD_BO}</TableCell>
                                     <TableCell align="right">{val.BUILDGROUP}{val.HGA_BO.slice(2)}{val.PARM_HGA_TAB[0]}</TableCell>
                                     <TableCell align="right">{val.BUILDGROUP}{val.HGA_BO.slice(2)}{val.PARM_HGA_TAB[0]}-
-                                        <input className="input-size" type="number" value={inputFieldWOF[index]} onChange={event => {
+                                        <input className="input-size" type="text" value={inputFieldWOF[index]} onChange={event => {
                                             handleInputWOF(
                                                 index,
                                                 event
@@ -316,6 +445,7 @@ export default function RDH_RO(props) {
                         </TableBody>
 
                     </Table>
+
                 </TableContainer>
 
                 <Grid component={Paper} className="w-400">
@@ -323,7 +453,7 @@ export default function RDH_RO(props) {
                         <div className="grid-qty-content">
                             <p>Set QTY : </p>
                             <p>
-                                <input className="input-size" type="number" onChange={event => {
+                                <input className="input-size" type="text" required onChange={event => {
                                     handleInputAllQTY(event)
                                 }} />
                             </p>
@@ -332,7 +462,7 @@ export default function RDH_RO(props) {
                         <div className="grid-qty-content">
                             <p>Set Work Order File : </p>
                             <p>
-                                <input className="input-size" type="number" onChange={event => {
+                                <input className="input-size" type="text" required onChange={event => {
                                     handleInputAllWOF(event)
                                 }} />
                             </p>
@@ -341,6 +471,7 @@ export default function RDH_RO(props) {
                     </div>
                 </Grid>
             </div>
+
 
             <div className="content-preview">
                 <Grid component={Paper}>
@@ -354,7 +485,7 @@ export default function RDH_RO(props) {
                         </p>
 
                         <p>Set HGA BO Per surface :
-                            <input type="number" value={persurface} onChange={(event) => {
+                            <input type="text" value={persurface} required onChange={(event) => {
                                 setPersurface(event.target.value);
                             }} />
                         </p>
@@ -372,7 +503,7 @@ export default function RDH_RO(props) {
                         <Divider />
 
                         <p>1) Build flow สำหรับ Test งาน <b>{data.length} BOs</b> กลุ่ม <b> {data[0].EXP_ID} </b> จะ ทำการ Test บน เครื่อง
-                            <input type="text" value={testON} onChange={(event) => {
+                            <input type="text" value={testON} required onChange={(event) => {
                                 setTestON(event.target.value);
                             }} />
                         </p>
@@ -381,7 +512,7 @@ export default function RDH_RO(props) {
                             <p className="m-l-5" ><b>* Surf. ที่เป็นเลขคู่ให้เริ่ม test จาก Tab UP ให้หมดก่อน (Surf. 2, 4, 6, ....)</b></p>
                         </p>
 
-                        <p>2) Media ที่ใช้ เราจะใช้ Media <input type="number" value={media} onChange={(event) => {
+                        <p>2) Media ที่ใช้ เราจะใช้ Media <input type="text" value={media} required onChange={(event) => {
                             setMedia(event.target.value);
                         }} /> จำนวน <b>{newProduct.length !== 0 ? (newProduct[4].result !== 0 ? newProduct[4].result : 'X') : 'X'}</b> surfaces เพื่อ test งาน <b>{data.length} BO.</b>  นี้
                         </p>
@@ -425,14 +556,15 @@ export default function RDH_RO(props) {
                         </TableContainer>
                     </div>
 
-                    <div className="m-t-3">
-                        <p>HGA shipment detail</p>
-                        <TableContainer className="main-table" component={Paper} style={{ width: '1000px' }}>
+                    {/* <div className="m-t-3">
+                        <TableContainer className="main-table" component={Paper} >
                             <Table size="small" aria-label="customized table">
-                                <TableHead className="table-h">
-                                    <TableRow>
-                                        {rowHGAshipment.map((val, index) => (
-                                            <TableCell key={index} align="left" className="table-h-text"><p>{val.title}</p></TableCell>
+                                <TableHead>
+                                    <TableRow className="table-h">
+                                        {rowHeader.map((row, index) => (
+                                            <TableCell key={index} align="right" className="table-h-text">
+                                                {Parser(row.nameHeader)}
+                                            </TableCell>
                                         ))}
                                     </TableRow>
                                 </TableHead>
@@ -440,24 +572,49 @@ export default function RDH_RO(props) {
                                 <TableBody>
                                     {newData.map((val, index) => (
                                         <TableRow key={index} hover>
-                                            <TableCell align="left">{val.HGA_BO}</TableCell>
-                                            <TableCell align="left"><input className="input-size" type="number" /></TableCell>
-                                            <TableCell align="left"><input className="input-size" type="number" /></TableCell>
-                                            <TableCell align="left"><input className="input-size" type="number" /></TableCell>
-                                            <TableCell align="left"><input className="input-size" type="number" /></TableCell>
-                                            <TableCell align="left"><input className="input-size" type="number" /></TableCell>
-                                            <TableCell align="left"><input className="input-size" type="number" /></TableCell>
-                                            <TableCell align="left"><input className="input-size" type="number" /></TableCell>
-                                            <TableCell align="left"><input className="input-size" type="number" /></TableCell>
+                                            <TableCell align="right">{index + 1}</TableCell>
+                                            <TableCell align="right">{val.EXP_ID}</TableCell>
+                                            <TableCell align="right">{val.BUILDGROUP}</TableCell>
+                                            <TableCell align="right">{val.SLC_PRIORITY}</TableCell>
+                                            <TableCell align="right">{val.PARM_HGA_TAB}</TableCell>
+                                            <TableCell align="right">{val.HGA_BO}</TableCell>
+                                            <TableCell align="right">{val.AIRBEARINGDESIGN}</TableCell>
+                                            <TableCell align="right">{val.HGA_QTY}</TableCell>
+                                            <TableCell align="right">{val.SLD_BO}</TableCell>
+                                            <TableCell align="right">{val.WO}</TableCell>
+                                            <TableCell align="right">{val.WOF}</TableCell>
+                                            <TableCell align="right">{val.TMWI_ET}</TableCell>
+                                            <TableCell align="right">{val.HGA_BO}</TableCell>
+                                            <TableCell align="right">{val.TSR_PN_G_SAAM}</TableCell>
+                                            <TableCell align="right">{val.CL_TSR_PN_I_ELECTRIC1}</TableCell>
+                                            <TableCell align="right">{val.MEDIA}</TableCell>
+                                            <TableCell align="right">{val.TESTON}</TableCell>
+                                            <TableCell align="right">{val.SW}</TableCell>
+                                            <TableCell align="right">{val.FW}</TableCell>
+                                            <TableCell align="right">{val.THREE_DIGIT_WAFER_CODE}</TableCell>
+                                            <TableCell align="right">-</TableCell>
+
                                         </TableRow>
                                     ))}
 
                                 </TableBody>
                             </Table>
                         </TableContainer>
+                    </div> */}
+
+                    {/* export Excel */}
+
+                    <div className="export m-t-3">
+                        <ExcelFile filename="Automated Buildflow" element={<p className="submit-preview"  >Export Excel</p>}>
+                            <ExcelSheet dataSet={multiDataSet} name="RDH RO" />
+                        </ExcelFile>
                     </div>
 
-                    <div>
+
+
+
+
+                    <div className="m-t-5">
                         <p>Image Flow :
                             <select onChange={handleSelectImage} >
                                 <option> select image</option>
@@ -470,17 +627,22 @@ export default function RDH_RO(props) {
                         </p>
                         <div className="m-t-3 grid-images">
                             {dataImage.map((val, index) => (
-                                    <a key={index} href={`${host}/showImages/${(encodeURIComponent(val.images.trim()))}`}>
-                                        <img src={`${host}/showImages/${(encodeURIComponent(val.images.trim()))}`} alt="not images" width="350" height="auto" />
-                                    </a>
+                                <a key={index} href={`${host}/showImages/${(encodeURIComponent(val.images.trim()))}`}>
+                                    <img src={`${host}/showImages/${(encodeURIComponent(val.images.trim()))}`} alt="not images" width="350" height="auto" />
+                                </a>
                             ))}
                         </div>
 
                     </div>
 
+
                 </div>
+
             ) : null}
+
+
 
         </div>
     )
 }
+
