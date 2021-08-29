@@ -23,6 +23,10 @@
     width: 400px;
 }
 
+.p-5-10 {
+    padding: 5px 10px;
+}
+
 
 .submit-delete {
     border: 1px solid rgb(160, 153, 221);
@@ -199,13 +203,13 @@
 .grid-images {
     width: 500px;
     display: grid;
-    grid-template-columns:repeat(3, 1fr);
+    grid-template-columns:repeat(2, 1fr);
     grid-gap: 30px;
 }
 
 .grid-images img {
     border: 1px solid #333;
-    width: 300px;
+    width: 600px;
 }
 
 .grid-s-image {

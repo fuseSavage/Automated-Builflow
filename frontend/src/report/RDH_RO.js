@@ -1,10 +1,11 @@
-import { TableContainer, Table, TableCell, TableHead, TableRow, Paper, TableBody, Grid, Divider } from '@material-ui/core'
+import { TableContainer, Table, TableCell, TableHead, TableRow, Paper, TableBody, Grid, Divider, Tooltip } from '@material-ui/core'
 import React, { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom';
 import Parser from 'html-react-parser';
 import ReactQuill from 'react-quill';
-import Axios from 'axios';
 import ReactExport from 'react-data-export';
+import axios from 'axios';
+
 
 
 const ExcelFile = ReactExport.ExcelFile;
@@ -60,9 +61,11 @@ function product(title, result) {
 export default function RDH_RO(props) {
 
     const data = useLocation().state.data;
-    const { swfwList, imageName } = props
+    const { name } = props
     const [textEditer, setTextEditer] = useState('');
     const [expID, setExpID] = useState(data[0].EXP_ID)
+
+    // console.log(gid)
 
     //************************ set partNum  START ************************//
     useEffect(() => {
@@ -73,6 +76,41 @@ export default function RDH_RO(props) {
         }
         fetchData();
     }, [data])
+
+
+    const [selectfile, setSelectFile] = useState([])
+    const [imagesName, setImagesName] = useState([])
+
+    const handleselectImg = (e) => {
+        setSelectFile(e.target.files)
+    }
+
+    const handleUpload = () => {
+        if (selectfile != null) {
+            let formData = new FormData();
+            for (const key of Object.keys(selectfile)) {
+                formData.append('imagesArray', selectfile[key])
+            }
+
+            fetch(`http://localhost:3001/uploadimg`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'multipart/form-data',
+                },
+                credentials: 'include',
+            })
+                .then(async (res) => {
+                    const data = await res.json()
+                    setImagesName(data)
+                })
+                .catch(error => {
+                    throw error;
+                })
+        } else {
+            alert('Please select image ')
+        }
+    }
     //************************ set partNum  END ************************//
 
 
@@ -144,35 +182,21 @@ export default function RDH_RO(props) {
 
     const [persurface, setPersurface] = useState(500)
 
-    const [swfw, setSWFW] = useState(["4.51B213", "SHF 1.6.1.246"])
-    const [newswfw, setNewSWFW] = useState('')
-    const handleSelectSWFW = (e) => {
-        setSWFW((e.target.value).split("/"))
-        setNewSWFW(e.target.value)
-    }
+    // const [swfw, setSWFW] = useState(["4.51B213", "SHF 1.6.1.246"])
+    // const [newswfw, setNewSWFW] = useState('')
+    // const handleSelectSWFW = (e) => {
+    //     setSWFW((e.target.value).split("/"))
+    //     setNewSWFW(e.target.value)
+    // }
+
+    const [sw, setSW] = useState('')
+    const [fw, setFW] = useState('')
 
 
     const [testON, setTestON] = useState('')
 
     const [media, setMedia] = useState()
 
-    const [dataImage, setDataImage] = useState([])
-    const handleSelectImage = (e) => {
-        let imageName = e.target.value
-        if (imageName.length !== 0) {
-            Axios.get(`http://localhost:3001/getImage`, {
-                params: {
-                    title: imageName,
-                }
-            })
-                .then((response) => {
-                    setDataImage(response.data)
-                })
-                .catch((error) => {
-                    throw error;
-                })
-        }
-    }
 
     // console.log(dataImage)
 
@@ -188,12 +212,12 @@ export default function RDH_RO(props) {
     const [newProduct, setNewProduct] = useState([])
     const [newData, setNewData] = useState([])
     // console.log('new', newData)
-   
+
     function handlePreview() {
         setNewTestOn(testON)
         setNewMedia(media)
-        setNewSW(swfw[0])
-        setNewFW(swfw[1])
+        setNewSW(sw)
+        setNewFW(fw)
 
         const rowCal = createCalculate(0, 0, 0)
 
@@ -208,6 +232,8 @@ export default function RDH_RO(props) {
 
         setNewProduct(rowProduct)
         setNewData(rowCal.newvalue)
+
+        // console.log(rowCal.newvalue)
 
 
 
@@ -230,13 +256,13 @@ export default function RDH_RO(props) {
             NoSurface = Math.ceil(sumQTY / persurface);
         }
         for (let i = 0; i < data.length; i++) {
-            if (inputFieldQTY[i] !== "" && inputFieldQTY[i] != null && inputFieldQTY[i] !== "0") {
+            if (inputFieldQTY[i] !== "" && inputFieldQTY[i] != null && inputFieldQTY[i] !== "0" && inputFieldQTY[i] > 0) {
                 const newD = data[i]
                 newvalue.push(data[i])
                 // {val.BUILDGROUP}{val.HGA_BO.slice(2)}{val.PARM_HGA_TAB[0]}-
                 newD.MEDIA = media;
-                newD.SW = swfw[0];
-                newD.FW = swfw[1];
+                newD.SW = sw;
+                newD.FW = fw;
                 newD.TESTON = testON;
 
                 newD.WO = data[i].BUILDGROUP + data[i].HGA_BO.slice(2) + data[i].PARM_HGA_TAB[0]
@@ -333,7 +359,34 @@ export default function RDH_RO(props) {
 
     // ***********************  Export ExcelFile  END ****************************//
 
+    const testSubmit = async () => {
+        await axios.get(`http://localhost:3001/automail`, {
+            params: {
+                image: imagesName,
+            }
+        })
+            .then((response) => {
+                console.log(response)
+            })
+            .catch((error) => {
+                throw error;
+            })
+    }
 
+    // const testAutomail = () => {
+    //     const smtpjs = window.Email;
+    //     smtpjs.send({
+    //         Host : "mailhost.seagate.com",
+    //         Username : "chaiwat.singkibut@seagate.com",
+    //         Password : "Singkibut931897",
+    //         To : 'chaiwat.singkibut@seagate.com',
+    //         From : "you@isp.com",
+    //         Subject : "This is the subject",
+    //         Body : "And this is the body"
+    //     }).then(
+    //       message => alert(message)
+    //     );
+    // }
 
     const host = `${window.location.protocol}//${window.location.hostname}:3001`
 
@@ -341,6 +394,7 @@ export default function RDH_RO(props) {
     return (
         <div className="main-content">
             <p>Flow RDH-RO</p>
+            <p className="m-t-3">Create by <b> GID : {name}</b></p>
             <TableContainer className="detail-card" component={Paper} style={{ width: '280px' }}>
                 <Table size="small" aria-label="customized table">
                     <TableBody>
@@ -490,7 +544,7 @@ export default function RDH_RO(props) {
                             }} />
                         </p>
 
-                        <p>SW/FW :
+                        {/* <p>SW/FW :
                             <select value={newswfw} onChange={handleSelectSWFW} >
                                 {swfwList.map((val) => {
                                     return (
@@ -498,6 +552,16 @@ export default function RDH_RO(props) {
                                     )
                                 })}
                             </select>
+                        </p> */}
+                        <p>SW :
+                            <input type="text" value={sw} required onChange={(event) => {
+                                setSW(event.target.value);
+                            }} />
+                        </p>
+                        <p>FW :
+                            <input type="text" value={fw} required onChange={(event) => {
+                                setFW(event.target.value);
+                            }} />
                         </p>
 
                         <Divider />
@@ -554,11 +618,12 @@ export default function RDH_RO(props) {
                                 </TableBody>
                             </Table>
                         </TableContainer>
-                    </div>
-
-                    {/* <div className="m-t-3">
-                        <TableContainer className="main-table" component={Paper} >
+                       
+                       
+                       <h3>Final Table</h3>
+                        <TableContainer className="main-table" component={Paper}  >
                             <Table size="small" aria-label="customized table">
+
                                 <TableHead>
                                     <TableRow className="table-h">
                                         {rowHeader.map((row, index) => (
@@ -568,6 +633,7 @@ export default function RDH_RO(props) {
                                         ))}
                                     </TableRow>
                                 </TableHead>
+
 
                                 <TableBody>
                                     {newData.map((val, index) => (
@@ -593,14 +659,15 @@ export default function RDH_RO(props) {
                                             <TableCell align="right">{val.FW}</TableCell>
                                             <TableCell align="right">{val.THREE_DIGIT_WAFER_CODE}</TableCell>
                                             <TableCell align="right">-</TableCell>
-
                                         </TableRow>
                                     ))}
-
                                 </TableBody>
+
                             </Table>
+
                         </TableContainer>
-                    </div> */}
+
+                    </div>
 
                     {/* export Excel */}
 
@@ -611,29 +678,29 @@ export default function RDH_RO(props) {
                     </div>
 
 
-
-
-
                     <div className="m-t-5">
-                        <p>Image Flow :
-                            <select onChange={handleSelectImage} >
-                                <option> select image</option>
-                                {imageName.map((val, index) => {
-                                    return (
-                                        <option key={index} value={val}>{val}</option>
-                                    )
-                                })}
-                            </select>
-                        </p>
-                        <div className="m-t-3 grid-images">
-                            {dataImage.map((val, index) => (
-                                <a key={index} href={`${host}/showImages/${(encodeURIComponent(val.images.trim()))}`}>
-                                    <img src={`${host}/showImages/${(encodeURIComponent(val.images.trim()))}`} alt="not images" width="350" height="auto" />
-                                </a>
-                            ))}
+                        <Grid component={Paper}>
+                            <div className="form-group">
+                                <p>Select Image</p>
+                                <input type="file" multiple onChange={(e) => handleselectImg(e)} />
+                                <Tooltip title="upload">
+                                    <p className="submit-preview" onClick={handleUpload}>Submit</p>
+                                </Tooltip>
+                            </div>
+                        </Grid>
+                        <div className="grid-images">
+                            {imagesName.length !== 0 ? imagesName.map((val, index) => (
+
+                                <img key={index} src={`${host}/showImages/${(encodeURIComponent(val.trim()))}`} alt="not images" />
+
+                            )) : <p className="p-5-10">Please select images</p>}
                         </div>
 
                     </div>
+                    <p className="submit-preview" onClick={testSubmit}>Submit</p>
+
+
+                    {/* <p className="submit-preview" onClick={testAutomail}></p> */}
 
 
                 </div>

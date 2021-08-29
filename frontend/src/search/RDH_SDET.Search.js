@@ -10,20 +10,53 @@ export default function SCH_RDH_SDET(props) {
     const [exp_bin, setExp_bin] = useState('');
     const [statusResult, setStatusResult] = useState('')
 
-    const handleSubmit =  () => {
+    const handleSubmit = () => {
 
         if (name) {
-             Axios.get(`http://localhost:3001/rdh-sdet?exp_bin=${exp_bin}`)
+            Axios.get(`http://localhost:3001/rdh-sdet?exp_bin=${exp_bin}`)
                 .then((response) => {
 
                     if (response.data.message) {
                         setStatusResult(response.data.message)
                     } else {
-                        history.push({
-                            pathname: '/rdh-sdet',
-                            state: { data: response.data }
-                        })
-                        // console.log(response.data)
+                        // console.log('new data', response.data)
+                        const result = response.data
+                        const data = [];
+                        if (result.length !== 0) {
+                            result.forEach((e, index) => {
+                                let build = {};
+                                build = {
+
+                                    EXP_ID: e[0],
+                                    PARTNUM: e[1],
+                                    SLD_BO: e[2],
+                                    PRODUCTFAMILY: e[3],
+                                    THREE_DIGIT_WAFER_CODE: e[4],
+                                    AIRBEARINGDESIGN: e[5],
+                                    SDET_ACTIVATION_DT: e[6],
+                                    SDET_BN: e[7],
+                                    SDET_BUILDGROUP: e[8],
+                                    SDET_CONTROLGROUP: e[9],
+                                    SDET_ET_TSR: e[10],
+                                    SDET_MIN_QTY: e[11],
+                                    SDET_PART_OF_EXP: e[12],
+                                    SDET_PRIORITY: e[13],
+                                    SDET_QTY: e[14],
+                                    SDET_RETEST_BUILD_NUMBER: e[15],
+                                    SDET_SETS_PARTNUM: e[16],
+                                    SDET_SETS_VERSION: e[17],
+                                    SDET_SITE: e[18],
+                                    SDET_TAB: e[19],
+                                }
+
+                                data.push(build)
+                            });
+                            history.push({
+                                pathname: '/rdh-sdet',
+                                state: { data: data }
+                            })
+                            // console.log('new data', data)
+                        }
                     }
                 })
                 .catch((error) => {

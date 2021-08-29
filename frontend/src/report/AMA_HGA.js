@@ -1,9 +1,8 @@
-import { TableContainer, Table, TableCell, TableHead, TableRow, Paper, TableBody, Grid } from '@material-ui/core'
+import { TableContainer, Table, TableCell, TableHead, TableRow, Paper, TableBody, Grid, Tooltip } from '@material-ui/core'
 import React, { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom';
 import Parser from 'html-react-parser';
 import ReactQuill from 'react-quill';
-import Axios from 'axios';
 import ReactExport from 'react-data-export';
 
 
@@ -53,7 +52,7 @@ function product(title, result) {
 export default function AMA_HGA(props) {
 
     const data = useLocation().state.data;
-    const { swfwList, imageName } = props
+    const { name } = props;
     const [textEditer, setTextEditer] = useState('');
     const [expID, setExpID] = useState(data[0].EXP_ID)
 
@@ -68,32 +67,73 @@ export default function AMA_HGA(props) {
     const [tgaU, settgaU] = useState()
 
     useEffect(() => {
-        async function fetchData() {
-            data.forEach(e => {
-                if (e.PARM_HGA_TAB === 'Down-00') {
-                    e.PARM_HGA_TAB = 'Dn'
-                }
-                if (e.PARM_HGA_TAB === 'Up-01') {
-                    e.PARM_HGA_TAB = 'Up'
-                }
-                if (e.PARM_HGA_TAB === 'Dn') {
-                    sethgaD(e.HGA_PART_NUM)
-                    settgaD(e.HGA_SUSPENSION_PN)
-                }
-                if (e.PARM_HGA_TAB === 'Up') {
-                    sethgaU(e.HGA_PART_NUM)
-                    settgaU(e.HGA_SUSPENSION_PN)
-                }
-                setinputFieldQTY(arr => [...arr, e.HGA_QTY])
-                setinputFieldAAB((arr => [...arr, e.AIRBEARINGDESIGN.slice(0, 3) + '.' + e.AIRBEARINGDESIGN.slice(3, 5) + ' ' + e.AIRBEARINGDESIGN.slice(5)]))
-                setinputFieldWafer(arr => [...arr, e.THREE_DIGIT_WAFER_CODE])
-                setExpID(e.EXP_ID)
-                setProductfanily(e.BLD_INTENT_PLATFORM)
-                // val.AIRBEARINGDESIGN.slice(0, 3) + '.' + val.AIRBEARINGDESIGN.slice(3, 5) + ' ' + val.AIRBEARINGDESIGN.slice(5)
-            });
+        try {
+            async function fetchData() {
+                data.forEach(e => {
+                    if (e.PARM_HGA_TAB === 'Down-00') {
+                        e.PARM_HGA_TAB = 'Dn'
+                    }
+                    if (e.PARM_HGA_TAB === 'Up-01') {
+                        e.PARM_HGA_TAB = 'Up'
+                    }
+                    if (e.PARM_HGA_TAB === 'Dn') {
+                        sethgaD(e.HGA_PART_NUM)
+                        settgaD(e.HGA_SUSPENSION_PN)
+                    }
+                    if (e.PARM_HGA_TAB === 'Up') {
+                        sethgaU(e.HGA_PART_NUM)
+                        settgaU(e.HGA_SUSPENSION_PN)
+                    }
+                    setinputFieldQTY(arr => [...arr, e.HGA_QTY])
+                    setinputFieldAAB((arr => [...arr, e.AIRBEARINGDESIGN.slice(0, 3) + '.' + e.AIRBEARINGDESIGN.slice(3, 5) + ' ' + e.AIRBEARINGDESIGN.slice(5)]))
+                    setinputFieldWafer(arr => [...arr, e.THREE_DIGIT_WAFER_CODE])
+                    setExpID(e.EXP_ID)
+                    setProductfanily(e.BLD_INTENT_PLATFORM)
+                    // val.AIRBEARINGDESIGN.slice(0, 3) + '.' + val.AIRBEARINGDESIGN.slice(3, 5) + ' ' + val.AIRBEARINGDESIGN.slice(5)
+                });
+            }
+            fetchData();
         }
-        fetchData();
+        catch (err) {
+            throw err;
+        }
+
     }, [data])
+
+
+    const [selectfile, setSelectFile] = useState([])
+    const [imagesName, setImagesName] = useState([])
+
+    const handleselectImg = (e) => {
+        setSelectFile(e.target.files)
+    }
+
+    const handleUpload = () => {
+        if (selectfile != null) {
+            let formData = new FormData();
+            for (const key of Object.keys(selectfile)) {
+                formData.append('imagesArray', selectfile[key])
+            }
+
+            fetch(`http://localhost:3001/uploadimg`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'multipart/form-data',
+                },
+                credentials: 'include',
+            })
+                .then(async (res) => {
+                    const data = await res.json()
+                    setImagesName(data)
+                })
+                .catch(error => {
+                    throw error;
+                })
+        } else {
+            alert('Please select image ')
+        }
+    }
     //************************ ser Bin Detail  END ************************//
 
 
@@ -183,34 +223,14 @@ export default function AMA_HGA(props) {
 
     // *********************** div Preview-grid START ****************************//
     const [persurface, setPersurface] = useState(500)
-    const [swfw, setSWFW] = useState(["4.51B213", "SHF 1.6.1.246"])
-    const [newswfw, setNewSWFW] = useState('')
+
 
     // const [media, setMedia] = useState()
     const [testON, setTestON] = useState('')
 
-    const handleSelectSWFW = (e) => {
-        setSWFW((e.target.value).split("/"))
-        setNewSWFW(e.target.value)
-    }
+    const [sw, setSW] = useState('')
+    const [fw, setFW] = useState('')
 
-    const [dataImage, setDataImage] = useState([])
-    const handleSelectImage = (e) => {
-        let imageName = e.target.value
-        if (imageName.length !== 0) {
-            Axios.get(`http://localhost:3001/getImage`, {
-                params: {
-                    title: imageName,
-                }
-            })
-                .then((response) => {
-                    setDataImage(response.data)
-                })
-                .catch((error) => {
-                    throw error;
-                })
-        }
-    }
 
 
     // *********************** div Preview-grid END ****************************//
@@ -225,8 +245,8 @@ export default function AMA_HGA(props) {
     const [newData, setNewData] = useState([])
 
     function handlePreview() {
-        setNewSW(swfw[0])
-        setNewFW(swfw[1])
+        setNewSW(sw)
+        setNewFW(fw)
         setNewTestOn(testON)
         // setNewMedia(media)
 
@@ -264,17 +284,18 @@ export default function AMA_HGA(props) {
             NoSurface = Math.ceil(sumQTY / persurface);
         }
         for (let i = 0; i < data.length; i++) {
-            if (inputFieldQTY[i] !== "" && inputFieldQTY[i] != null && inputFieldQTY[i] !== "0") {
+            if (inputFieldQTY[i] !== "" && inputFieldQTY[i] != null && inputFieldQTY[i] !== "0" && inputFieldQTY[i] > 0) {
                 newvalue.push(data[i])
 
                 const newD = data[i]
-                newD.SW = swfw[0];
-                newD.FW = swfw[1];
+                newD.SW = sw;
+                newD.FW = fw;
 
                 newD.WO = data[i].BUILDGROUP + data[i].HGA_BO.slice(2) + data[i].PARM_HGA_TAB[0]
                 newD.TMWI_ET = data[i].BUILDGROUP + data[i].HGA_BO.slice(2)
                 newD.MEDIA_LOT = testON;
             }
+// console.log(newvalue)
         }
         return { sumQTY, NoBO, NoSurface, newvalue };
     }
@@ -282,92 +303,93 @@ export default function AMA_HGA(props) {
     // ***********************  Calculate After click Preview END ****************************//
 
 
-        // ***********************  Export ExcelFile  START ****************************//
+    // ***********************  Export ExcelFile  START ****************************//
 
-        const borders = {
-            top: { style: "thin", color: { rgb: '001400' } },
-            bottom: { style: "thin", color: { rgb: '001400' } },
-            left: { style: "thin", color: { rgb: '001400' } },
-            right: { style: "thin", color: { rgb: '001400' } }
+    const borders = {
+        top: { style: "thin", color: { rgb: '001400' } },
+        bottom: { style: "thin", color: { rgb: '001400' } },
+        left: { style: "thin", color: { rgb: '001400' } },
+        right: { style: "thin", color: { rgb: '001400' } }
+    }
+    const fonttitle = {
+        name: 'Arial',
+        sz: '11',
+        bold: true,
+        color: { rgb: 'ffffff' }
+    }
+    const filltitle = {
+        fgColor: { rgb: '00cc00' }
+    }
+
+    const fontvalue = {
+        name: 'Arial',
+        sz: '11',
+    }
+    const fillvalue = {
+        fgColor: { rgb: 'ebffeb' }
+    }
+
+    const aligncenter = {
+        horizontal: "center"
+    }
+    const multiDataSet = [
+        {
+            columns: [
+                { title: "No", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "Wafer", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "AAB  Design ", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "Group", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "L-Slider from SDET BO", width: { wpx: 150 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+
+                { title: "SDET sort", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "HGA BO", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "HGA loading Q'ty", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "HGA WO file", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+
+                { title: "TAB", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "TMWI", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "Build Num", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+
+                { title: "ET TSR ", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "Media LOT", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "Flamework", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+                { title: "WITE Revision", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
+
+            ],
+            data: newData.map((data, index) => [
+                { value: index + 1, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.THREE_DIGIT_WAFER_CODE, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.AIRBEARINGDESIGN, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: 'Group ?', style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+
+                { value: data.SDET_BN, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.SORT, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.HGA_BO, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.HGA_QTY, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+
+                { value: data.WOF, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.PARM_HGA_TAB, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.TMWI_ET, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.HGA_BO, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+
+                { value: data.HGA_ET_TSR, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.MEDIA_LOT, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.FW, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+                { value: data.SW, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
+
+
+
+            ])
         }
-        const fonttitle = {
-            name: 'Arial',
-            sz: '11',
-            bold: true,
-            color: { rgb: 'ffffff' }
-        }
-        const filltitle = {
-            fgColor: { rgb: '00cc00' }
-        }
-    
-        const fontvalue = {
-            name: 'Arial',
-            sz: '11',
-        }
-        const fillvalue = {
-            fgColor: { rgb: 'ebffeb' }
-        }
-    
-        const aligncenter = {
-            horizontal: "center"
-        }
-        const multiDataSet = [
-            {
-                columns: [
-                    { title: "No", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
-                    { title: "Wafer", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
-                    { title: "AAB  Design ", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
-                    { title: "Group", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
-                    { title: "L-Slider from SDET BO", width: { wpx: 150 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
-                    
-                    { title: "SDET sort", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
-                    { title: "HGA BO", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
-                    { title: "HGA loading Q'ty", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
-                    { title: "HGA WO file", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
-                    
-                    { title: "TAB", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
-                    { title: "TMWI", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
-                    { title: "Build Num", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
-    
-                    { title: "ET TSR ", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
-                    { title: "Media LOT", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
-                    { title: "Flamework", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
-                    { title: "WITE Revision", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
-    
-                ],
-                data: newData.map((data, index) => [
-                    { value: index + 1, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
-                    { value: data.THREE_DIGIT_WAFER_CODE, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
-                    { value: data.AIRBEARINGDESIGN, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
-                    { value: 'Group ?', style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
-    
-                    { value: data.SDET_BN, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
-                    { value: data.SORT, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
-                    { value: data.HGA_BO, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
-                    { value: data.HGA_QTY, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
-    
-                    { value: data.WOF, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
-                    { value: data.PARM_HGA_TAB, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
-                    { value: data.TMWI_ET, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
-                    { value: data.HGA_BO, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
-    
-                    { value: data.HGA_ET_TSR, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
-                    { value: data.MEDIA_LOT, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
-                    { value: data.FW, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
-                    { value: data.SW, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
-    
-                    
-    
-                ])
-            }
-        ];
-    
-        // ***********************  Export ExcelFile  END ****************************//
+    ];
+
+    // ***********************  Export ExcelFile  END ****************************//
 
     const host = `${window.location.protocol}//${window.location.hostname}:3001`
     return (
         <div className="main-content">
             <p>Flow AMA-HGA</p>
+            <p className="m-t-3">Create by <b> GID : {name}</b></p>
             <TableContainer className="detail-card" component={Paper} style={{ width: '280px' }}>
                 <Table size="small" aria-label="customized table">
                     <TableBody>
@@ -448,68 +470,74 @@ export default function AMA_HGA(props) {
                         </TableHead>
 
                         <TableBody>
+
                             {data.map((val, index) => {
+                                try {
+                                    return (
+                                        <TableRow key={index} hover>
+                                            <TableCell align="right">
+                                                <input className="input-size" type="text" value={inputFieldWafer[index]} onChange={event => {
+                                                    handleInputWafer(
+                                                        index,
+                                                        event
+                                                    );
 
-                                return (
-                                    <TableRow key={index} hover>
-                                        <TableCell align="right">
-                                            <input className="input-size" type="text" value={inputFieldWafer[index]} onChange={event => {
-                                                handleInputWafer(
-                                                    index,
-                                                    event
-                                                );
+                                                }} />
+                                            </TableCell>
+                                            <TableCell align="right">
+                                                <input className="i-s-5" type="text" value={inputFieldAAB[index]} onChange={event => {
+                                                    handleInputAAB(
+                                                        index,
+                                                        event
+                                                    );
 
-                                            }} />
-                                        </TableCell>
-                                        <TableCell align="right">
-                                            <input className="i-s-5" type="text" value={inputFieldAAB[index]} onChange={event => {
-                                                handleInputAAB(
-                                                    index,
-                                                    event
-                                                );
+                                                }} />
+                                            </TableCell>
+                                            <TableCell align="right">Group ?</TableCell>
+                                            <TableCell align="right">{val.SDET_BN}</TableCell>
+                                            <TableCell align="right">
+                                                <input className="input-size" type="text" value={inputFieldSort[index]} onChange={event => {
+                                                    handleInputSort(
+                                                        index,
+                                                        event
+                                                    );
+                                                }} />
+                                            </TableCell>
+                                            <TableCell align="right">{val.HGA_BO}</TableCell>
+                                            <TableCell align="right">
+                                                <input className="input-size" type="number" value={inputFieldQTY[index]} onChange={event => {
+                                                    handleInputQTY(
+                                                        index,
+                                                        event
+                                                    );
 
-                                            }} />
-                                        </TableCell>
-                                        <TableCell align="right">Group ?</TableCell>
-                                        <TableCell align="right">{val.SDET_BN}</TableCell>
-                                        <TableCell align="right">
-                                            <input className="input-size" type="text" value={inputFieldSort[index]} onChange={event => {
-                                                handleInputSort(
-                                                    index,
-                                                    event
-                                                );
-                                            }} />
-                                        </TableCell>
-                                        <TableCell align="right">{val.HGA_BO}</TableCell>
-                                        <TableCell align="right">
-                                            <input className="input-size" type="number" value={inputFieldQTY[index]} onChange={event => {
-                                                handleInputQTY(
-                                                    index,
-                                                    event
-                                                );
+                                                }} />
+                                            </TableCell>
+                                            <TableCell align="center">{val.BUILDGROUP}{val.HGA_BO.slice(2)}{val.PARM_HGA_TAB[0]}-
+                                                <input className="input-size" type="number" value={inputFieldWOF[index]} onChange={event => {
+                                                    handleInputWOF(
+                                                        index,
+                                                        event
+                                                    );
 
-                                            }} />
-                                        </TableCell>
-                                        <TableCell align="center">{val.BUILDGROUP}{val.HGA_BO.slice(2)}{val.PARM_HGA_TAB[0]}-
-                                            <input className="input-size" type="number" value={inputFieldWOF[index]} onChange={event => {
-                                                handleInputWOF(
-                                                    index,
-                                                    event
-                                                );
+                                                }} />
+                                                .wo
+                                            </TableCell>
+                                            {/* <TableCell align="right">{newMedia}</TableCell> */}
+                                            <TableCell align="right">{val.PARM_HGA_TAB}</TableCell>
+                                            <TableCell align="right">{val.BUILDGROUP}{val.HGA_BO.slice(2)}</TableCell>
+                                            <TableCell align="right">{val.HGA_BO}</TableCell>
+                                            <TableCell align="right">{val.HGA_ET_TSR}</TableCell>
+                                            <TableCell align="right">{newTestOn}</TableCell>
+                                            <TableCell align="right">{newFW}</TableCell>
+                                            <TableCell align="right">{newSW}</TableCell>
+                                        </TableRow>
+                                    )
+                                }
+                                catch (err) {
+                                    throw err;
+                                }
 
-                                            }} />
-                                            .wo
-                                        </TableCell>
-                                        {/* <TableCell align="right">{newMedia}</TableCell> */}
-                                        <TableCell align="right">{val.PARM_HGA_TAB}</TableCell>
-                                        <TableCell align="right">{val.BUILDGROUP}{val.HGA_BO.slice(2)}</TableCell>
-                                        <TableCell align="right">{val.HGA_BO}</TableCell>
-                                        <TableCell align="right">{val.HGA_ET_TSR}</TableCell>
-                                        <TableCell align="right">{newTestOn}</TableCell>
-                                        <TableCell align="right">{newFW}</TableCell>
-                                        <TableCell align="right">{newSW}</TableCell>
-                                    </TableRow>
-                                )
                             })}
                         </TableBody>
 
@@ -557,14 +585,15 @@ export default function AMA_HGA(props) {
                                 }} />
                             </p>
 
-                            <p>SW/FW :
-                                <select value={newswfw} onChange={handleSelectSWFW} >
-                                    {swfwList.map((val) => {
-                                        return (
-                                            <option key={val.id} value={val.swfw}>{val.swfw}</option>
-                                        )
-                                    })}
-                                </select>
+                            <p>SW :
+                                <input type="text" value={sw} required onChange={(event) => {
+                                    setSW(event.target.value);
+                                }} />
+                            </p>
+                            <p>FW :
+                                <input type="text" value={fw} required onChange={(event) => {
+                                    setFW(event.target.value);
+                                }} />
                             </p>
 
                             <p>Media Lot :
@@ -605,6 +634,58 @@ export default function AMA_HGA(props) {
                                 </TableBody>
                             </Table>
                         </TableContainer>
+
+                        <h3>Final Table</h3>
+
+
+                        <TableContainer className="main-table" component={Paper} >
+                            <Table size="small" aria-label="customized table">
+
+                                <TableHead>
+                                    <TableRow>
+                                        {rowHeader.map((row, index) => (
+                                            <TableCell key={index} align="right" className="table-h-text">
+                                                {Parser(row.nameHeader)}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                </TableHead>
+
+                                <TableBody>
+
+                                    {newData.map((val, index) => {
+                                        try {
+                                            return (
+                                                <TableRow key={index} hover>
+                                                    <TableCell align="right">{val.THREE_DIGIT_WAFER_CODE}</TableCell>
+                                                    <TableCell align="right">{val.AIRBEARINGDESIGN}</TableCell>
+                                                    <TableCell align="right">Group ?</TableCell>
+                                                    <TableCell align="right">{val.SDET_BN}</TableCell>
+                                                    <TableCell align="right">{val.SORT}</TableCell>
+                                                    <TableCell align="right">{val.HGA_BO}</TableCell>
+                                                    <TableCell align="right">{val.HGA_QTY}</TableCell>
+                                                    <TableCell align="center">{val.WOF}</TableCell>
+                                                    {/* <TableCell align="right">{newMedia}</TableCell> */}
+                                                    <TableCell align="right">{val.PARM_HGA_TAB}</TableCell>
+                                                    <TableCell align="right">{val.TMWI_ET}</TableCell>
+                                                    <TableCell align="right">{val.HGA_BO}</TableCell>
+                                                    <TableCell align="right">{val.HGA_ET_TSR}</TableCell>
+                                                    <TableCell align="right">{val.MEDIA_LOT}</TableCell>
+                                                    <TableCell align="right">{val.FW}</TableCell>
+                                                    <TableCell align="right">{val.SW}</TableCell>
+                                                </TableRow>
+                                            )
+                                        }
+                                        catch (err) {
+                                            throw err;
+                                        }
+
+                                    })}
+                                </TableBody>
+
+                            </Table>
+                        </TableContainer>
+
                     </div>
 
 
@@ -616,26 +697,25 @@ export default function AMA_HGA(props) {
                         </ExcelFile>
                     </div>
 
-                    
 
 
-                    <div>
-                        <p>Image Flow :
-                            <select onChange={handleSelectImage} >
-                                <option> select image</option>
-                                {imageName.map((val, index) => {
-                                    return (
-                                        <option key={index} value={val}>{val}</option>
-                                    )
-                                })}
-                            </select>
-                        </p>
-                        <div className="m-t-3 grid-images">
-                            {dataImage.map((val, index) => (
-                                <a key={index} href={`${host}/showImages/${(encodeURIComponent(val.images.trim()))}`}>
-                                    <img src={`${host}/showImages/${(encodeURIComponent(val.images.trim()))}`} alt="not images" width="350" height="auto" />
-                                </a>
-                            ))}
+
+                    <div className="m-t-5">
+                        <Grid component={Paper}>
+                            <div className="form-group">
+                                <p>Select Image</p>
+                                <input type="file" multiple onChange={(e) => handleselectImg(e)} />
+                                <Tooltip title="upload">
+                                    <p className="submit-preview" onClick={handleUpload}>Submit</p>
+                                </Tooltip>
+                            </div>
+                        </Grid>
+                        <div className="grid-images">
+                            {imagesName.length !== 0 ? imagesName.map((val, index) => (
+
+                                <img key={index} src={`${host}/showImages/${(encodeURIComponent(val.trim()))}`} alt="not images" />
+
+                            )) : <p className="p-5-10">Please select images</p>}
                         </div>
 
                     </div>

@@ -1,9 +1,8 @@
-import { TableContainer, Table, TableCell, TableHead, TableRow, Paper, TableBody, Grid } from '@material-ui/core'
+import { TableContainer, Table, TableCell, TableHead, TableRow, Paper, TableBody, Grid, Tooltip } from '@material-ui/core'
 import React, { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom';
 import Parser from 'html-react-parser';
 import ReactQuill from 'react-quill';
-import Axios from 'axios';
 import ReactExport from 'react-data-export';
 
 
@@ -53,7 +52,7 @@ const rowBinDetail = [
 export default function AMA_LSD(props) {
 
     const data = useLocation().state.data;
-    const { imageName } = props
+    const { name } = props;
     const [textEditer, setTextEditer] = useState('');
     const [expID, setExpID] = useState(data[0].EXP_ID)
 
@@ -101,6 +100,41 @@ export default function AMA_LSD(props) {
         }
         fetchData();
     }, [data])
+
+
+    const [selectfile, setSelectFile] = useState([])
+    const [imagesName, setImagesName] = useState([])
+
+    const handleselectImg = (e) => {
+        setSelectFile(e.target.files)
+    }
+
+    const handleUpload = () => {
+        if (selectfile != null) {
+            let formData = new FormData();
+            for (const key of Object.keys(selectfile)) {
+                formData.append('imagesArray', selectfile[key])
+            }
+
+            fetch(`http://localhost:3001/uploadimg`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'multipart/form-data',
+                },
+                credentials: 'include',
+            })
+                .then(async (res) => {
+                    const data = await res.json()
+                    setImagesName(data)
+                })
+                .catch(error => {
+                    throw error;
+                })
+        } else {
+            alert('Please select image ')
+        }
+    }
     //************************ ser Bin Detail  END ************************//
 
 
@@ -113,7 +147,7 @@ export default function AMA_LSD(props) {
         data[index].QTY_GOOD = event.target.value;
         setinputFieldQTY_good(values);
     };
-    
+
     const [inputFieldWOF, setinputFieldWOF] = useState([])
     const handleInputWOF = (index, event) => {
         const values = [...inputFieldWOF];
@@ -233,23 +267,6 @@ export default function AMA_LSD(props) {
     // *********************** div Preview-grid START ****************************//
 
 
-    const [dataImage, setDataImage] = useState([])
-    const handleSelectImage = (e) => {
-        let imageName = e.target.value
-        if (imageName.length !== 0) {
-            Axios.get(`http://localhost:3001/getImage`, {
-                params: {
-                    title: imageName,
-                }
-            })
-                .then((response) => {
-                    setDataImage(response.data)
-                })
-                .catch((error) => {
-                    throw error;
-                })
-        }
-    }
 
 
     // *********************** div Preview-grid END ****************************//
@@ -258,7 +275,6 @@ export default function AMA_LSD(props) {
     const [newData, setNewData] = useState([])
     function handlePreview() {
         const rowCal = createCalculate(0, 0, 0)
-
         setNewData(rowCal.newvalue)
         // console.log('data', rowCal.newvalue)
 
@@ -370,6 +386,7 @@ export default function AMA_LSD(props) {
     return (
         <div className="main-content">
             <p>Flow AMA L-Slider</p>
+            <p className="m-t-3">Create by <b> GID : {name}</b></p>
             <TableContainer className="detail-card" component={Paper} style={{ width: '280px' }}>
                 <Table size="small" aria-label="customized table">
                     <TableBody>
@@ -620,33 +637,77 @@ export default function AMA_LSD(props) {
                 {newData.length !== 0 ? (
                     <div>
 
+                        <div className="m-t-3">
+
+                            <h3>Final Table</h3>
+                            <TableContainer className="main-table" component={Paper} >
+                                <Table size="small" aria-label="customized table">
+
+                                    <TableHead>
+                                        <TableRow >
+                                            {rowHeader.map((row, index) => (
+                                                <TableCell key={index} align="center" className="table-h-text">
+                                                    {Parser(row.nameHeader)}
+                                                </TableCell>
+                                            ))}
+                                        </TableRow>
+                                    </TableHead>
+
+                                    <TableBody>
+                                        {newData.map((val, index) => {
+
+                                            return (
+                                                <TableRow key={index} hover>
+                                                    <TableCell align="right">{val.THREE_DIGIT_WAFER_CODE}</TableCell>
+                                                    <TableCell align="right">{val.AIRBEARINGDESIGN}</TableCell>
+                                                    <TableCell align="right">Group ?</TableCell>
+                                                    <TableCell align="right">{val.LDU_LOT}</TableCell>
+                                                    <TableCell align="right">{val.SLD_BO}</TableCell>
+                                                    <TableCell align="right">{val.SLIDER_LOT}</TableCell>
+                                                    <TableCell align="right">{val.L_SLD_BO}</TableCell>
+                                                    <TableCell align="center">{val.L_SLD_TAB}</TableCell>
+                                                    <TableCell align="center">{val.WOF}</TableCell>
+                                                    <TableCell align="right">{val.QTY_GOOD}</TableCell>
+                                                    <TableCell align="right">{val.QTY_SHEAR}</TableCell>
+                                                    <TableCell align="right">{val.QTY_LAB}</TableCell>
+
+                                                </TableRow>
+                                            )
+                                        })}
+                                    </TableBody>
+
+                                </Table>
+                            </TableContainer>
+
+
+                        </div>
+
                         <div className="export m-t-3">
                             <ExcelFile filename="Automated Buildflow" element={<p className="submit-preview"  >Export Excel</p>}>
                                 <ExcelSheet dataSet={multiDataSet} name="AMA L-Slider" />
                             </ExcelFile>
                         </div>
 
-                        <div>
-                    <p>Image Flow :
-                        <select onChange={handleSelectImage} >
-                            <option> select image</option>
-                            {imageName.map((val, index) => {
-                                return (
-                                    <option key={index} value={val}>{val}</option>
-                                )
-                            })}
-                        </select>
-                    </p>
-                    <div className="m-t-3 grid-images">
-                        {dataImage.map((val, index) => (
-                            <a key={index} href={`${host}/showImages/${(encodeURIComponent(val.images.trim()))}`}>
-                                <img src={`${host}/showImages/${(encodeURIComponent(val.images.trim()))}`} alt="not images" width="350" height="auto" />
-                            </a>
-                        ))}
-                    </div>
+                        <div className="m-t-5">
+                            <Grid component={Paper}>
+                                <div className="form-group">
+                                    <p>Select Image</p>
+                                    <input type="file" multiple onChange={(e) => handleselectImg(e)} />
+                                    <Tooltip title="upload">
+                                        <p className="submit-preview" onClick={handleUpload}>Submit</p>
+                                    </Tooltip>
+                                </div>
+                            </Grid>
+                            <div className="grid-images">
+                                {imagesName.length !== 0 ? imagesName.map((val, index) => (
 
-                </div>
-                        
+                                    <img key={index} src={`${host}/showImages/${(encodeURIComponent(val.trim()))}`} alt="not images" />
+
+                                )) : <p className="p-5-10">Please select images</p>}
+                            </div>
+
+                        </div>
+
                     </div>
                 ) : null}
 

@@ -1,13 +1,14 @@
 import { Tooltip } from '@material-ui/core'
 import { ExitToApp, Home } from '@material-ui/icons'
-import React from 'react'
-import { Link, useHistory } from 'react-router-dom'
+import React, { useState } from 'react'
+import { Link, useHistory, Redirect } from 'react-router-dom'
 
 export default function Logout() {
 
     const history = useHistory()
+    const [redirect, setRedirect] = useState(false);
 
-    const host = `${window.location.protocol}//${window.location.hostname}:3001`
+    const host = `http://10.127.104.187:3001`
 
     const handlelogout = async () => {
         await fetch(`${host}/logout`, {
@@ -16,7 +17,12 @@ export default function Logout() {
             credentials: 'include'
         })
         // history.push('/')
+        setRedirect(true);
         history.go(0)
+    }
+
+    if (redirect) {
+        return <Redirect to='/' />
     }
 
     return (

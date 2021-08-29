@@ -1,4 +1,5 @@
 {
+  "homepage": "/auto_build_flow",
   "name": "frontend",
   "version": "0.1.0",
   "private": true,

@@ -6,9 +6,9 @@ import Home from '../report/Home';
 import SCH_RDH_RO from '../search/RDH_RO.Search';
 
 import RDH_RO from '../report/RDH_RO';
-import SWFW from '../configurations/SWFW';
-import AddImage from '../configurations/AddImage';
-import ShowImages from '../configurations/ShowImage';
+// import SWFW from '../configurations/SWFW';
+// import AddImage from '../configurations/AddImage';
+// import ShowImages from '../configurations/ShowImage';
 import SCH_RDH_SDET from '../search/RDH_SDET.Search';
 import RDH_SDET from '../report/RDH_SDET';
 import SCH_RDH_HGA from '../search/RDH_HGA.Search';
@@ -27,41 +27,42 @@ import AMA_LSD_SDET from '../report/AMA_LSD_SDET';
 export default function Content() {
 
     const [login, setLogin] = useState()
-    const [data_swfw, setData_SWFW] = useState([])
-    const [nameTitle, setNameTitle] = useState([])
+    // const [data_swfw, setData_SWFW] = useState([])
+    // const [nameTitle, setNameTitle] = useState([])
 
     
     useEffect(() => {
         async function fetchData() {
-            const host = `${window.location.protocol}//${window.location.hostname}:3001`
+            const host = `http://10.127.104.187:3001`
             await Axios.get(`${host}/login`)
                 .then((response) => {
                     if (response.data.loggedIn === true) {
-                        setLogin(response.data.user[0].name)
+                        setLogin(response.data.user)
+                        // console.log('console test', response.data.user)
                     }
                 })
                 .catch((error) => {
                     throw error;
                 })
 
-            await Axios.get(`${host}/swfw`)
-                .then((response) => {
-                    setData_SWFW(response.data)
-                })
-                .catch((error) => {
-                    throw error;
-                })
+            // await Axios.get(`${host}/swfw`)
+            //     .then((response) => {
+            //         setData_SWFW(response.data)
+            //     })
+            //     .catch((error) => {
+            //         throw error;
+            //     })
 
-            await Axios.get(`http://localhost:3001/check-title`)
-                .then((response) => {
-                    for (let i = 0; i < response.data.length; i++) {
-                        setNameTitle(arrlist => [...arrlist, response.data[i].Tables_in_images])
-                    }
+            // await Axios.get(`http://localhost:3001/check-title`)
+            //     .then((response) => {
+            //         for (let i = 0; i < response.data.length; i++) {
+            //             setNameTitle(arrlist => [...arrlist, response.data[i].Tables_in_images])
+            //         }
 
-                })
-                .catch((error) => {
-                    throw error;
-                })
+            //     })
+            //     .catch((error) => {
+            //         throw error;
+            //     })
         }
         fetchData();
     }, [])
@@ -80,19 +81,19 @@ export default function Content() {
                 <Route path='/search-ama-lsd-hga' component={() => <SCH_AMA_LSD_HGA name={login} />}></Route>
                 <Route path='/search-ama-lsd-sdet' component={() => <SCH_AMA_LSD_SDET name={login} />}></Route>
 
-                <Route path='/rdh-ro' component={() => <RDH_RO name={login} swfwList={data_swfw} imageName={nameTitle} />}></Route>
-                <Route path='/rdh-sdet' component={() => <RDH_SDET name={login} swfwList={data_swfw} imageName={nameTitle}/>}></Route>
-                <Route path='/rdh-hga' component={() => <RDH_HGA name={login} swfwList={data_swfw} imageName={nameTitle}/>}></Route>
-                <Route path='/ama-sdet' component={() => <AMA_SDET name={login} swfwList={data_swfw} imageName={nameTitle}/>}></Route>
-                <Route path='/ama-hga' component={() => <AMA_HGA name={login} swfwList={data_swfw} imageName={nameTitle}/>}></Route>
-                <Route path='/ama-lsd' component={() => <AMA_LSD name={login} swfwList={data_swfw} imageName={nameTitle}/>}></Route>
-                <Route path='/ama-lsd-hga' component={() => <AMA_LSD_HGA name={login} swfwList={data_swfw} imageName={nameTitle}/>}></Route>
-                <Route path='/ama-lsd-sdet' component={() => <AMA_LSD_SDET name={login} swfwList={data_swfw} imageName={nameTitle}/>}></Route>
+                <Route path='/rdh-ro' component={() => <RDH_RO name={login}   />}></Route>
+                <Route path='/rdh-sdet' component={() => <RDH_SDET name={login}  />}></Route>
+                <Route path='/rdh-hga' component={() => <RDH_HGA name={login}  />}></Route>
+                <Route path='/ama-sdet' component={() => <AMA_SDET name={login}  />}></Route>
+                <Route path='/ama-hga' component={() => <AMA_HGA name={login} />}></Route>
+                <Route path='/ama-lsd' component={() => <AMA_LSD name={login} />}></Route>
+                <Route path='/ama-lsd-hga' component={() => <AMA_LSD_HGA name={login} />}></Route>
+                <Route path='/ama-lsd-sdet' component={() => <AMA_LSD_SDET name={login}  />}></Route>
 
 
-                <Route path='/sw-fw' component={() => <SWFW name={login} />}></Route>
-                <Route path='/add-img' component={() => <AddImage name={login} />}></Route>
-                <Route path='/showImg' component={() => <ShowImages name={login} />}></Route>
+                {/* <Route path='/sw-fw' component={() => <SWFW name={login} />}></Route> */}
+                {/* <Route path='/add-img' component={() => <AddImage name={login} />}></Route> */}
+                {/* <Route path='/showImg' component={() => <ShowImages name={login} />}></Route> */}
             </Switch>
 
         </div>

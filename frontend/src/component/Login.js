@@ -1,27 +1,27 @@
 import React, { useState } from 'react'
 import { LockOpen } from '@material-ui/icons';
 import { TextField, Tooltip, Divider } from '@material-ui/core'
+
+
 import { useHistory } from 'react-router'
 
 export default function Login() {
 
     const history = useHistory()
     const [gid, setGID] = useState('');
-    const [password, setPassword] = useState('');
     const [loginstatus, setLoginStatus] = useState('');
 
-    const host = `${window.location.protocol}//${window.location.hostname}:3001`
+    const host = `http://10.127.104.187:3001`
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (gid.length !== 0 && password.length !== 0) {
+        if (gid.length !== 0 ) {
             await fetch(`${host}/login`, {
                 method: 'POST',
                 headers: { 'content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify({
                     gid: gid,
-                    password: password,
                 })
             }).then(async (response) => {
                 const content = await response.json();
@@ -34,16 +34,16 @@ export default function Login() {
                 throw error;
             })
         } else {
-            alert('กรุณากรอก GID และ Password')
+            alert('กรุณากรอก GID')
         }
     }
-    
+
     return (
         <>
             <div className="login-main">
                 <div className="login-title">
                     <p><LockOpen /></p>
-                    <p>Login</p>
+                    <p>User Create</p>
                 </div>
                 <Divider />
                 <div className="loging-content">
@@ -61,7 +61,7 @@ export default function Login() {
                                 />
                             </Tooltip>
                         </div>
-                        <div className="password">
+                        {/* <div className="password">
                             <p>Password</p>
                             <Tooltip title='password'>
                                 <TextField
@@ -73,7 +73,7 @@ export default function Login() {
                                     onChange={(e) => { setPassword(e.target.value) }}
                                 />
                             </Tooltip>
-                        </div>
+                        </div> */}
                         <Tooltip title='submit'>
                             <div className="submit-login">
                                 <p type="submit" onClick={handleSubmit}>Submit</p>
@@ -97,3 +97,7 @@ export default function Login() {
         </>
     )
 }
+
+
+
+

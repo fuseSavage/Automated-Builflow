@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import Axios from 'axios'
 import Calendar from 'react-calendar';
-import { MenuOpen, Apps } from '@material-ui/icons';
+import { MenuOpen } from '@material-ui/icons';
 import { Divider } from '@material-ui/core';
 import { Link } from 'react-router-dom'
 
@@ -17,7 +17,7 @@ export default function Drawers(props) {
 
   useEffect(() => {
     async function fetchData() {
-      const host = `${window.location.protocol}//${window.location.hostname}:3001`
+      const host = `http://10.127.104.187:3001`
       await Axios.get(`${host}/login`).then((response) => {
         if (response.data.loggedIn === true) {
           setLogin(response.data.user[0].name)
@@ -38,7 +38,7 @@ export default function Drawers(props) {
     menuDrawer = (
       <div>
         <Menu />
-        <Configurations />
+        {/* <Configurations /> */}
         <Calendars />
         <Logout />
       </div>
@@ -72,25 +72,25 @@ export default function Drawers(props) {
     )
   }
 
-  function Configurations() {
-    return (
-      <>
-        <div className="config-main">
-          <div className="config-title">
-            <p><Apps /></p>
-            <p> Configurations </p>
-          </div>
-          <div className="config-item">
-            <Link to='/add-img'> Add Image Flow</Link>
-            {/* <Link to='/set-mail'> Alert Mail Setting</Link> */}
-            <Link to='/sw-fw'> SW/FW Setting</Link>
-            {/* <Link to='/manager'> User Manager</Link> */}
-          </div>
-        </div>
-        <Divider />
-      </>
-    )
-  }
+  // function Configurations() {
+  //   return (
+  //     <>
+  //       <div className="config-main">
+  //         <div className="config-title">
+  //           <p><Apps /></p>
+  //           <p> Configurations </p>
+  //         </div>
+  //         <div className="config-item">
+  //           <Link to='/add-img'> Add Image Flow</Link>
+  //           {/* <Link to='/set-mail'> Alert Mail Setting</Link> */}
+  //           <Link to='/sw-fw'> SW/FW Setting</Link>
+  //           {/* <Link to='/manager'> User Manager</Link> */}
+  //         </div>
+  //       </div>
+  //       <Divider />
+  //     </>
+  //   )
+  // }
 
   function Calendars() {
     return (

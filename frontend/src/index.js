@@ -9,7 +9,7 @@ import 'react-quill/dist/quill.snow.css';
 
 ReactDOM.render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/auto_build_flow" >
       <App />
     </BrowserRouter>
   </React.StrictMode>,

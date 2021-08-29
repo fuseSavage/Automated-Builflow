@@ -19,11 +19,37 @@ export default function SCH_AMA_LSD(props) {
                     if (response.data.message) {
                         setStatusResult(response.data.message)
                     } else {
-                        history.push({
-                            pathname: '/ama-lsd',
-                            state: { data: response.data }
-                        })
-                        // console.log(response.data)
+                        // console.log('data', response.data)
+                        const result = response.data
+                        const data = [];
+                        if (result.length !== 0) {
+                            result.forEach((e, index) => {
+                                let build = {};
+                                build = {
+                                    EXP_ID: e[0],
+                                    SDET_BN: e[1],
+                                    L_SLD_TEAM: e[2],
+                                    L_SLD_TAB: e[3],
+                                    L_SLD_PART_NUM: e[4],
+                                    SDET_ET_TSR: e[5],
+                                    L_SLD_BO: e[6],
+                                    L_SLD_CMP_DT: e[7],
+                                    L_SLD_BUILD_GROUP: e[8],
+                                    PRODUCTFAMILY: e[9],
+                                    PARTNUM: e[10],
+                                    SLD_BO: e[11],
+                                    THREE_DIGIT_WAFER_CODE: e[12],
+                                    AIRBEARINGDESIGN: e[13],
+                                }
+
+                                data.push(build)
+                            });
+                            history.push({
+                                pathname: '/ama-lsd',
+                                state: { data: data }
+                            })
+                            // console.log('new data', data)
+                        }
                     }
                 })
                 .catch((error) => {

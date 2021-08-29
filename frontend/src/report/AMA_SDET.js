@@ -1,9 +1,8 @@
-import { TableContainer, Table, TableCell, TableHead, TableRow, Paper, TableBody, Grid } from '@material-ui/core'
+import { TableContainer, Table, TableCell, TableHead, TableRow, Paper, TableBody, Grid, Tooltip } from '@material-ui/core'
 import React, { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom';
 import Parser from 'html-react-parser';
 import ReactQuill from 'react-quill';
-import Axios from 'axios';
 import ReactExport from 'react-data-export';
 
 
@@ -59,7 +58,7 @@ function product(title, result) {
 export default function AMA_SDET(props) {
 
     const data = useLocation().state.data;
-    const { swfwList, imageName } = props
+    const { name } = props;
     const [textEditer, setTextEditer] = useState('');
     const [expID, setExpID] = useState(data[0].EXP_ID)
 
@@ -85,10 +84,10 @@ export default function AMA_SDET(props) {
     useEffect(() => {
         async function fetchData() {
             data.forEach(e => {
-                if (e.SDET_TAB === '0') {
+                if (e.SDET_TAB === '0' || e.SDET_TAB === '00') {
                     e.SDET_TAB = 'Dn'
                 }
-                if (e.SDET_TAB === '1') {
+                if (e.SDET_TAB === '1' || e.SDET_TAB === '01') {
                     e.SDET_TAB = 'Up'
                 }
                 if (e.SDET_TAB === 'Dn') {
@@ -110,6 +109,42 @@ export default function AMA_SDET(props) {
         }
         fetchData();
     }, [data])
+
+
+
+    const [selectfile, setSelectFile] = useState([])
+    const [imagesName, setImagesName] = useState([])
+
+    const handleselectImg = (e) => {
+        setSelectFile(e.target.files)
+    }
+
+    const handleUpload = () => {
+        if (selectfile != null) {
+            let formData = new FormData();
+            for (const key of Object.keys(selectfile)) {
+                formData.append('imagesArray', selectfile[key])
+            }
+
+            fetch(`http://localhost:3001/uploadimg`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'multipart/form-data',
+                },
+                credentials: 'include',
+            })
+                .then(async (res) => {
+                    const data = await res.json()
+                    setImagesName(data)
+                })
+                .catch(error => {
+                    throw error;
+                })
+        } else {
+            alert('Please select image ')
+        }
+    }
     //************************ ser Bin Detail  END ************************//
 
 
@@ -177,33 +212,12 @@ export default function AMA_SDET(props) {
 
     // *********************** div Preview-grid START ****************************//
     const [persurface, setPersurface] = useState(500)
-    const [swfw, setSWFW] = useState(["4.51B213", "SHF 1.6.1.246"])
-    const [newswfw, setNewSWFW] = useState('')
-
     const [testON, setTestON] = useState('')
 
-    const handleSelectSWFW = (e) => {
-        setSWFW((e.target.value).split("/"))
-        setNewSWFW(e.target.value)
-    }
+    const [sw, setSW] = useState('')
+    const [fw, setFW] = useState('')
 
-    const [dataImage, setDataImage] = useState([])
-    const handleSelectImage = (e) => {
-        let imageName = e.target.value
-        if (imageName.length !== 0) {
-            Axios.get(`http://localhost:3001/getImage`, {
-                params: {
-                    title: imageName,
-                }
-            })
-                .then((response) => {
-                    setDataImage(response.data)
-                })
-                .catch((error) => {
-                    throw error;
-                })
-        }
-    }
+
 
 
     // *********************** div Preview-grid END ****************************//
@@ -217,8 +231,8 @@ export default function AMA_SDET(props) {
     const [newData, setNewData] = useState([])
 
     function handlePreview() {
-        setNewSW(swfw[0])
-        setNewFW(swfw[1])
+        setNewSW(sw)
+        setNewFW(fw)
         setNewTestOn(testON)
 
         const rowCal = createCalculate(0, 0, 0)
@@ -253,12 +267,12 @@ export default function AMA_SDET(props) {
             NoSurface = Math.ceil(sumQTY / persurface);
         }
         for (let i = 0; i < data.length; i++) {
-            if (inputFieldQTY[i] !== "" && inputFieldQTY[i] != null && inputFieldQTY[i] !== "0") {
+            if (inputFieldQTY[i] !== "" && inputFieldQTY[i] != null && inputFieldQTY[i] !== "0" && inputFieldQTY[i] > 0) {
                 newvalue.push(data[i])
 
                 const newD = data[i]
-                newD.SW = swfw[0];
-                newD.FW = swfw[1];
+                newD.SW = sw;
+                newD.FW = fw;
 
                 newD.WO = 'S' + data[i].SDET_BUILDGROUP + data[i].SDET_BN.slice(2) + data[i].SDET_TAB[0]
                 newD.TMWI_ET = 'S' + data[i].SDET_BUILDGROUP + data[i].SDET_BN.slice(2)
@@ -311,11 +325,11 @@ export default function AMA_SDET(props) {
                 { title: "L-Slider BO", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
                 { title: "SDET SBR", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
                 { title: "SDET WO file", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
-                { title: "SDET loading Q'ty", width: { wpx: 150 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } }, 
+                { title: "SDET loading Q'ty", width: { wpx: 150 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
                 { title: "TAB", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
 
                 { title: "TMWI", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
-                { title: "Build Num ", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } }, 
+                { title: "Build Num ", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
                 { title: "ET TSR", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
                 { title: "Media LOT", style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
                 { title: "Flamework", width: { wpx: 120 }, style: { font: fonttitle, fill: filltitle, alignment: aligncenter, border: borders } },
@@ -336,7 +350,7 @@ export default function AMA_SDET(props) {
                 { value: data.SDET_TAB, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
 
                 { value: data.TMWI_ET, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
-                { value: data.SDET_BN, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } }, 
+                { value: data.SDET_BN, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
                 { value: data.SDET_ET_TSR, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
                 { value: data.MEDIA_LOT, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
                 { value: data.FW, style: { font: fontvalue, fill: fillvalue, alignment: aligncenter, border: borders } },
@@ -352,6 +366,7 @@ export default function AMA_SDET(props) {
     return (
         <div className="main-content">
             <p>Flow AMA-SDET</p>
+            <p className="m-t-3">Create by <b> GID : {name}</b></p>
             <TableContainer className="detail-card" component={Paper} style={{ width: '280px' }}>
                 <Table size="small" aria-label="customized table">
                     <TableBody>
@@ -552,14 +567,15 @@ export default function AMA_SDET(props) {
                                 }} />
                             </p>
 
-                            <p>SW/FW :
-                                <select value={newswfw} onChange={handleSelectSWFW} >
-                                    {swfwList.map((val) => {
-                                        return (
-                                            <option key={val.id} value={val.swfw}>{val.swfw}</option>
-                                        )
-                                    })}
-                                </select>
+                            <p>SW :
+                                <input type="text" value={sw} required onChange={(event) => {
+                                    setSW(event.target.value);
+                                }} />
+                            </p>
+                            <p>FW :
+                                <input type="text" value={fw} required onChange={(event) => {
+                                    setFW(event.target.value);
+                                }} />
                             </p>
 
                             <p>Media Lot :
@@ -600,6 +616,50 @@ export default function AMA_SDET(props) {
                                 </TableBody>
                             </Table>
                         </TableContainer>
+
+                        <h3>Final Table</h3>
+
+                        <TableContainer className="main-table" component={Paper} >
+                    <Table size="small" aria-label="customized table">
+
+                        <TableHead>
+                            <TableRow>
+                                {rowHeader.map((row, index) => (
+                                    <TableCell key={index} align="right" className="table-h-text">
+                                        {Parser(row.nameHeader)}
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        </TableHead>
+
+                        <TableBody>
+                            {data.map((val, index) => {
+
+
+                                return (
+                                    <TableRow key={index} hover>
+                                        <TableCell align="right">{val.THREE_DIGIT_WAFER_CODE}</TableCell>
+                                        <TableCell align="right">{val.AIRBEARINGDESIGN}</TableCell>
+                                        <TableCell align="right">group?</TableCell>
+                                        <TableCell align="right">{val.SLD_BO}</TableCell>
+                                        <TableCell align="right">{val.L_SLD_BO}</TableCell>
+                                        <TableCell align="right">{val.SDET_BN}</TableCell>
+                                        <TableCell align="center">{val.WOF}</TableCell>
+                                        <TableCell align="right">{val.SDET_QTY}</TableCell>
+                                        <TableCell align="right">{val.SDET_TAB}</TableCell>
+                                        <TableCell align="right">{val.TMWI_ET}</TableCell>
+                                        <TableCell align="right">{val.SDET_BN}</TableCell>
+                                        <TableCell align="right">{val.SDET_ET_TSR}</TableCell>
+                                        <TableCell align="right">{val.MEDIA_LOT}</TableCell>
+                                        <TableCell align="right">{val.FW}</TableCell>
+                                        <TableCell align="right">{val.SW}</TableCell>
+                                    </TableRow>
+                                )
+                            })}
+                        </TableBody>
+
+                    </Table>
+                </TableContainer>
                     </div>
 
                     {/* export Excel */}
@@ -610,23 +670,22 @@ export default function AMA_SDET(props) {
                         </ExcelFile>
                     </div>
 
-                    <div>
-                        <p>Image Flow :
-                            <select onChange={handleSelectImage} >
-                                <option> select image</option>
-                                {imageName.map((val, index) => {
-                                    return (
-                                        <option key={index} value={val}>{val}</option>
-                                    )
-                                })}
-                            </select>
-                        </p>
-                        <div className="m-t-3 grid-images">
-                            {dataImage.map((val, index) => (
-                                <a key={index} href={`${host}/showImages/${(encodeURIComponent(val.images.trim()))}`}>
-                                    <img src={`${host}/showImages/${(encodeURIComponent(val.images.trim()))}`} alt="not images" width="350" height="auto" />
-                                </a>
-                            ))}
+                    <div className="m-t-5">
+                        <Grid component={Paper}>
+                            <div className="form-group">
+                                <p>Select Image</p>
+                                <input type="file" multiple onChange={(e) => handleselectImg(e)} />
+                                <Tooltip title="upload">
+                                    <p className="submit-preview" onClick={handleUpload}>Submit</p>
+                                </Tooltip>
+                            </div>
+                        </Grid>
+                        <div className="grid-images">
+                            {imagesName.length !== 0 ? imagesName.map((val, index) => (
+
+                                <img key={index} src={`${host}/showImages/${(encodeURIComponent(val.trim()))}`} alt="not images" />
+
+                            )) : <p className="p-5-10">Please select images</p>}
                         </div>
 
                     </div>

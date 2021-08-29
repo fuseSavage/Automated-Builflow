@@ -10,6 +10,46 @@ export default function SCH_RDH_RO(props) {
     const [exp_bin, setExp_bin] = useState('');
     const [statusResult, setStatusResult] = useState('')
 
+   
+
+    // const [result, setResult] = useState([])
+
+
+
+    // useEffect(() => {
+    //     const data = [];
+    //     if (result.length !== 0) {
+
+    //         result.forEach((e, index) => {
+    //             let build = {};
+    //             build = {
+
+    //                 EXP_ID: e[0],
+    //                 BUILDGROUP: e[1],
+    //                 HGA_QTY: e[2],
+    //                 PRODUCTFAMILY: e[3],
+    //                 PARTNUM: e[4],
+    //                 BLD_INTENT_TYPE: e[5],
+    //                 HGA_SUSPENSION_PN: e[6],
+    //                 HGA_PART_NUM: e[7],
+    //                 SLC_PRIORITY: e[8],
+    //                 PARM_HGA_TAB: e[9],
+    //                 HGA_BO: e[10],
+    //                 AIRBEARINGDESIGN: e[11],
+    //                 SLD_BO: e[12],
+    //                 TSR_PN_G_SAAM: e[13],
+    //                 CL_TSR_PN_I_ELECTRIC1: e[14],
+    //                 THREE_DIGIT_WAFER_CODE: e[15],
+    //             }
+
+    //             data.push(build)
+    //         });
+    //     }
+    //     console.log('new data', data)
+    // })
+
+
+
     const handleSubmit = async () => {
 
         if (name) {
@@ -19,10 +59,43 @@ export default function SCH_RDH_RO(props) {
                     if (response.data.message) {
                         setStatusResult(response.data.message)
                     } else {
-                        history.push({
-                            pathname: '/rdh-ro',
-                            state: { data: response.data }
-                        })
+                        // console.log('data', response.data)
+                        const result = response.data
+                        const data = [];
+                        if (result.length !== 0) {
+                            result.forEach((e, index) => {
+                                let build = {};
+                                build = {
+
+                                    EXP_ID: e[0],
+                                    BUILDGROUP: e[1],
+                                    HGA_QTY: e[2],
+                                    PRODUCTFAMILY: e[3],
+                                    PARTNUM: e[4],
+                                    BLD_INTENT_TYPE: e[5],
+                                    HGA_SUSPENSION_PN: e[6],
+                                    HGA_PART_NUM: e[7],
+                                    SLC_PRIORITY: e[8],
+                                    PARM_HGA_TAB: e[9],
+                                    HGA_BO: e[10],
+                                    AIRBEARINGDESIGN: e[11],
+                                    SLD_BO: e[12],
+                                    TSR_PN_G_SAAM: e[13],
+                                    CL_TSR_PN_I_ELECTRIC1: e[14],
+                                    THREE_DIGIT_WAFER_CODE: e[15],
+                                }
+
+                                data.push(build)
+                            });
+                            history.push({
+                                pathname: '/rdh-ro',
+                                state: { 
+                                    data: data,
+                                 }
+                            })
+                            // console.log('new data', data)
+                        }
+
                     }
                 })
                 .catch((error) => {
@@ -30,7 +103,7 @@ export default function SCH_RDH_RO(props) {
                 })
         } else {
             alert('Please login')
-            history.push('/')
+            history.go(0)
         }
 
     }

@@ -19,11 +19,47 @@ export default function SCH_AMA_LSD_HGA(props) {
                     if (response.data.message) {
                         setStatusResult(response.data.message)
                     } else {
-                        history.push({
-                            pathname: '/ama-lsd-hga',
-                            state: { data: response.data }
-                        })
-                        // console.log(response.data)
+                    //    console.log('data', response.data)
+                       const result = response.data
+                       const data = [];
+                       if (result.length !== 0) {
+                           result.forEach((e, index) => {
+                               let build = {};
+                               build = {
+
+                                   EXP_ID: e[0],
+                                   HGA_ET_TSR: e[1],
+                                   L_SLD_BO: e[2],
+                                   L_SLD_BUILD_GROUP: e[3],
+                                   L_SLD_PART_NUM: e[4],
+                                   L_SLD_TAB: e[5],
+                                   BUILDGROUP: e[6],
+                                   SDET_BN: e[7],
+                                   HGA_QTY: e[8],
+                                   PRODUCTFAMILY: e[9],
+                                   PARTNUM: e[10],
+                                   BLD_INTENT_TYPE: e[11],
+                                   HGA_SUSPENSION_PN: e[12],
+                                   HGA_PART_NUM: e[13],
+                                   SLC_PRIORITY: e[14],
+                                   PARM_HGA_TAB: e[15],
+                                   HGA_BO: e[16],
+                                   AIRBEARINGDESIGN: e[17],
+                                   SLD_BO: e[18],
+                                   TSR_PN_G_SAAM: e[29],
+                                   CL_TSR_PN_I_ELECTRIC1: e[20],
+                                   THREE_DIGIT_WAFER_CODE: e[21],
+                               }
+
+                               data.push(build)
+                           });
+                           
+                           history.push({
+                               pathname: '/ama-lsd-hga',
+                               state: { data: data }
+                           })
+                        //    console.log('new data', data)
+                       }
                     }
                 })
                 .catch((error) => {

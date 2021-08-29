@@ -19,11 +19,47 @@ export default function SCH_AMA_LSD_SDET(props) {
                     if (response.data.message) {
                         setStatusResult(response.data.message)
                     } else {
-                        history.push({
-                            pathname: '/ama-lsd-sdet',
-                            state: { data: response.data }
-                        })
-                        // console.log(response.data)
+                    //    console.log('data', response.data)
+                       const result = response.data
+                       const data = [];
+                       if (result.length !== 0) {
+                           result.forEach((e, index) => {
+                               let build = {};
+                               build = {
+                                   EXP_ID: e[0],
+                                   SDET_ET_TSR: e[1],
+                                   L_SLD_TAB: e[2],
+                                   L_SLD_BUILD_GROUP: e[3],
+                                   L_SLD_BO: e[4],
+                                   L_SLD_PART_NUM: e[5],
+                                   PRODUCTFAMILY: e[6],
+                                   PARTNUM: e[7],
+                                   SLD_BO: e[8],
+                                   THREE_DIGIT_WAFER_CODE: e[9],
+                                   AIRBEARINGDESIGN: e[10],
+                                   SDET_ACTIVATION_DT: e[11],
+                                   SDET_BN: e[12],
+                                   SDET_BUILDGROUP: e[13],
+                                   SDET_CONTROLGROUP: e[14],
+                                   SDET_MIN_QTY: e[15],
+                                   SDET_PART_OF_EXP: e[16],
+                                   SDET_PRIORITY: e[17],
+                                   SDET_QTY: e[18],
+                                   SDET_RETEST_BUILD_NUMBER: e[19],
+                                   SDET_SETS_PARTNUM: e[20],
+                                   SDET_SETS_VERSION: e[21],
+                                    SDET_SITE: e[22],
+                                   SDET_TAB: e[23],
+                               }
+
+                               data.push(build)
+                           });
+                           history.push({
+                               pathname: '/ama-lsd-sdet',
+                               state: { data: data }
+                           })
+                        //    console.log('new data', data)
+                       }
                     }
                 })
                 .catch((error) => {
