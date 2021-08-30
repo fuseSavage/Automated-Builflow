@@ -17,7 +17,9 @@ export default function Drawers(props) {
 
   useEffect(() => {
     async function fetchData() {
-      const host = `http://localhost:3001`
+      // const host = `http://localhost:3001`
+      // const host = `http://10.44.94.152:3001`
+      const host = `http://10.127.241.88:3001`
       await Axios.get(`${host}/login`).then((response) => {
         if (response.data.loggedIn === true) {
           setLogin(response.data.user[0].name)

@@ -11,12 +11,15 @@ export default function Login() {
     const [gid, setGID] = useState('');
     const [loginstatus, setLoginStatus] = useState('');
 
-    const host = `http://localhost:3001`
+    // const host = `http://localhost:3001`
+    // const host = `http://10.44.94.152:3001`
+    const host = `http://10.127.241.88:3001`
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (gid.length !== 0 ) {
-            await fetch(`${host}/login`, {
+            // await fetch(`${host}/login`, {
+                await fetch(`${host}/login`, {
                 method: 'POST',
                 headers: { 'content-Type': 'application/json' },
                 credentials: 'include',

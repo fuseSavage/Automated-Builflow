@@ -8,7 +8,9 @@ export default function Logout() {
     const history = useHistory()
     const [redirect, setRedirect] = useState(false);
 
-    const host = `http://localhost:3001`
+    // const host = `http://localhost:3001`
+    // const host = `http://10.44.94.152:3001`
+    const host = `http://10.127.241.88:3001`
 
     const handlelogout = async () => {
         await fetch(`${host}/logout`, {
@@ -16,11 +18,14 @@ export default function Logout() {
             headers: { 'content-Type': 'application/json' },
             credentials: 'include'
         })
-        // history.push('/')
-        setRedirect(true);
-        history.go(0)
-    }
+            // history.push('/')
+            .then((response) => {
+                setRedirect(true);
+                history.go(0)
+            })
 
+    }
+    // console.log(redirect)
     if (redirect) {
         return <Redirect to='/' />
     }
