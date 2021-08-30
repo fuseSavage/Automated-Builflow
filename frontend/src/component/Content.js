@@ -33,7 +33,7 @@ export default function Content() {
     
     useEffect(() => {
         async function fetchData() {
-            const host = `http://10.127.104.187:3001`
+            const host = `http://localhost:3001`
             await Axios.get(`${host}/login`)
                 .then((response) => {
                     if (response.data.loggedIn === true) {

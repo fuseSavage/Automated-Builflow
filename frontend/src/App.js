@@ -6,7 +6,7 @@ import './stylesheet/contentStyle.css'
 function App() {
 
   Axios.defaults.withCredentials = true;
-  
+
   return (
     <div className="App">
       <Main />

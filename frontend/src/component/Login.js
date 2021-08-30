@@ -11,7 +11,7 @@ export default function Login() {
     const [gid, setGID] = useState('');
     const [loginstatus, setLoginStatus] = useState('');
 
-    const host = `http://10.127.104.187:3001`
+    const host = `http://localhost:3001`
 
     const handleSubmit = async (e) => {
         e.preventDefault();

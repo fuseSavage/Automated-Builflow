@@ -8,7 +8,7 @@ export default function Logout() {
     const history = useHistory()
     const [redirect, setRedirect] = useState(false);
 
-    const host = `http://10.127.104.187:3001`
+    const host = `http://localhost:3001`
 
     const handlelogout = async () => {
         await fetch(`${host}/logout`, {
